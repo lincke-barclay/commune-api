@@ -1,10 +1,10 @@
-package com.blincke.commune
+package com.blincke.commune_api
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class CommuneApplicationTests {
+class CommuneApiApplicationTests {
 
 	@Test
 	fun contextLoads() {
