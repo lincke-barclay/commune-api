@@ -6,7 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.util.*
 
 @Entity
-class SocialConnection(
+class Friendship(
     @Id
     val id: String = UUID.randomUUID().toString(),
 
