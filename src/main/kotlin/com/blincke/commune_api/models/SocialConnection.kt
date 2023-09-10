@@ -27,5 +27,4 @@ class SocialConnection(
 
     @Enumerated(EnumType.STRING)
     val status: Status,
-) {
-}
+)

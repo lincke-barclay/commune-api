@@ -33,5 +33,4 @@ class UserRating(
 
     @Column
     val explanation: String? = null,
-) {
-}
+)

@@ -26,5 +26,5 @@ class Location(
     val point: Point, // Latitude, Longitude
 
     @Column
-    val name: String?
+    val name: String? = null,
 )

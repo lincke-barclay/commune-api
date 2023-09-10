@@ -24,5 +24,4 @@ class Subcomment(
 
     @ManyToOne
     val parentComment: Comment,
-) {
-}
+)

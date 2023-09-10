@@ -34,5 +34,4 @@ class User(
 
     @ManyToOne
     val home: Location,
-) {
-}
+)
