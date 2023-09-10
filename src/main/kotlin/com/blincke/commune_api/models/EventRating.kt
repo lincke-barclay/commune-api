@@ -20,7 +20,7 @@ class EventRating(
     val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
-    val submitter: User,
+    val submitter: CommuneUser,
 
     @ManyToOne
     val event: Event,

@@ -23,7 +23,7 @@ class Comment(
     val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
-    val user: User,
+    val communeUser: CommuneUser,
 
     @Column(nullable = false)
     val text: String,

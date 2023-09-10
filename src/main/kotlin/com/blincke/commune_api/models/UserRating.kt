@@ -23,10 +23,10 @@ class UserRating(
     val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
-    val submitter: User,
+    val submitter: CommuneUser,
 
     @ManyToOne
-    val recipient: User,
+    val recipient: CommuneUser,
 
     @ManyToOne
     val event: Event,

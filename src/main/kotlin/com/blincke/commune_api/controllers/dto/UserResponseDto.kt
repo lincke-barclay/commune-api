@@ -1,6 +1,6 @@
 package com.blincke.commune_api.controllers.dto
 
-import com.blincke.commune_api.models.User
+import com.blincke.commune_api.models.CommuneUser
 import org.joda.time.DateTime
 
 data class UserResponseDto(
@@ -13,8 +13,8 @@ data class UserResponseDto(
     val home: LocationResponseDto,
 )
 
-fun UserResponse(user: User): UserResponseDto {
-    return with(user) {
+fun UserResponse(communeUser: CommuneUser): UserResponseDto {
+    return with(communeUser) {
         UserResponseDto(
             id = id,
             createdTs = createdTs,

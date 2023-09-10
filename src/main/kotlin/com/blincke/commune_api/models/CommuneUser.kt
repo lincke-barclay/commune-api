@@ -7,11 +7,10 @@ import jakarta.persistence.ManyToOne
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.joda.time.DateTime
-import java.util.Date
 import java.util.UUID
 
 @Entity
-class User(
+class CommuneUser(
     @Id
     val id: String = UUID.randomUUID().toString(),
 

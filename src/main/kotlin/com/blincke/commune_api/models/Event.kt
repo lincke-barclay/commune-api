@@ -20,7 +20,7 @@ class Event(
     val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
-    val owner: User,
+    val owner: CommuneUser,
 
     @ManyToOne // FIXME: May become a problem later with multi-venue events
     val venue: Location,

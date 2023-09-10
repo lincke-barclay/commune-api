@@ -20,10 +20,10 @@ class SocialConnection(
     val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
-    val initiator: User,
+    val initiator: CommuneUser,
 
     @ManyToOne
-    val recipient: User,
+    val recipient: CommuneUser,
 
     @Enumerated(EnumType.STRING)
     val status: Status,

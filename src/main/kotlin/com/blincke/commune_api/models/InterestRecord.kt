@@ -23,7 +23,7 @@ class InterestRecord(
     val proposal: Event,
 
     @ManyToOne
-    val recipient: User,
+    val recipient: CommuneUser,
 
     @Enumerated(EnumType.STRING)
     val status: Status, // Can only be pending if event is invite-only
