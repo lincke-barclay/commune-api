@@ -6,6 +6,7 @@ import com.blincke.commune_api.controllers.dto.UserResponseDto
 import com.blincke.commune_api.exceptions.UserNotFoundException
 import com.blincke.commune_api.services.UserService
 import org.slf4j.LoggerFactory
+import org.springframework.data.geo.Point
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,7 +36,7 @@ class UserController(
                             email = email,
                             firstName = firstName,
                             lastName = lastName,
-                            home = location,
+                            home = Point(locationLat, locationLon),
                         )
                     }
                 )

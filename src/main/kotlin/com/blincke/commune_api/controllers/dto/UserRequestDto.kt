@@ -6,5 +6,6 @@ data class UserRequestDto(
     val email: String,
     val firstName: String,
     val lastName: String,
-    val location: Point,
+    val locationLat: Double,
+    val locationLon: Double,
 )
