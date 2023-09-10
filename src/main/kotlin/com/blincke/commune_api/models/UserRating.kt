@@ -4,9 +4,9 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
 import java.util.*
 
 @Entity
@@ -16,11 +16,11 @@ class UserRating(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: DateTime = DateTime(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: DateTime = DateTime(),
 
     @ManyToOne
     val submitter: User,
