@@ -1,6 +1,6 @@
 package com.blincke.commune_api.services
 
-import com.blincke.commune_api.models.User
+import com.blincke.commune_api.models.CommuneUser
 import com.blincke.commune_api.repositories.UserRepository
 import org.springframework.stereotype.Service
 
@@ -9,11 +9,11 @@ class UserServices(
     private val userRepository: UserRepository
 ) {
 
-    fun getUserById(userId: String): User? {
-        return userRepository.findById(userId).get() ?: null
+    fun getUserById(userId: String): CommuneUser? {
+        return userRepository.findById(userId).get()
     }
 
-    fun getUserByEmail(email: String): User? {
+    fun getUserByEmail(email: String): CommuneUser? {
         return userRepository.findFirstByEmail(email)
     }
 }
