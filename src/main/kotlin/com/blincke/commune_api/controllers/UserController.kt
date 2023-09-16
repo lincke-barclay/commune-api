@@ -36,7 +36,7 @@ class UserController(
                             email = email,
                             firstName = firstName,
                             lastName = lastName,
-                            home = Point(locationLat, locationLon),
+                            homePoint = Point(locationLat, locationLon),
                         )
                     }
                 )

@@ -7,6 +7,7 @@ import jakarta.persistence.ManyToOne
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.joda.time.DateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -16,11 +17,11 @@ class UserRating(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: DateTime = DateTime(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: DateTime = DateTime(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
     val submitter: CommuneUser,

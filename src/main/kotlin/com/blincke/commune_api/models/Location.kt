@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.joda.time.DateTime
 import org.springframework.data.geo.Point
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -16,11 +17,11 @@ class Location(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: DateTime = DateTime(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: DateTime = DateTime(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @Column
     val point: Point, // Latitude, Longitude

@@ -2,11 +2,12 @@ package com.blincke.commune_api.controllers.dto
 
 import com.blincke.commune_api.models.CommuneUser
 import org.joda.time.DateTime
+import java.time.Instant
 
 data class UserResponseDto(
     val id: String,
-    val createdTs: DateTime,
-    val lastUpdatedTs: DateTime,
+    val createdTs: Instant,
+    val lastUpdatedTs: Instant,
     val email: String,
     val firstName: String,
     val lastName: String,
