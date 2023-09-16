@@ -6,6 +6,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -15,13 +17,12 @@ class Subcomment(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
     val parentComment: Comment,
-) {
-}
+)

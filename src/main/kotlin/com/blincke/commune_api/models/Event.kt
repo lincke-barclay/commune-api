@@ -3,6 +3,8 @@ package com.blincke.commune_api.models
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -12,14 +14,14 @@ class Event(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
-    val owner: User,
+    val owner: CommuneUser,
 
     @ManyToOne // FIXME: May become a problem later with multi-venue events
     val venue: Location,
@@ -29,10 +31,10 @@ class Event(
     val visibility: Visibility,
 
     @Column(nullable = false)
-    val startTime: Date,
+    val startTime: DateTime,
 
     @Column(nullable = false)
-    val endTime: Date,
+    val endTime: DateTime,
 
     @Column
     val title: String,

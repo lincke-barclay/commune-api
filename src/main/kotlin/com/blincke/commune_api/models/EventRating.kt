@@ -3,6 +3,8 @@ package com.blincke.commune_api.models
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -12,14 +14,14 @@ class EventRating(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
-    val submitter: User,
+    val submitter: CommuneUser,
 
     @ManyToOne
     val event: Event,

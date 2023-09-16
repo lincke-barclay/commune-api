@@ -5,7 +5,9 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
 import org.springframework.data.geo.Point
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -15,16 +17,15 @@ class Location(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @Column
     val point: Point, // Latitude, Longitude
 
     @Column
-    val name: String?,
-) {
-}
+    val name: String? = null,
+)

@@ -3,6 +3,7 @@ package com.blincke.commune_api.models
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -12,19 +13,18 @@ class Friendship(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
-    val initiator: User,
+    val initiator: CommuneUser,
 
     @ManyToOne
-    val recipient: User,
+    val recipient: CommuneUser,
 
     @Enumerated(EnumType.STRING)
     val status: Status,
-) {
-}
+)

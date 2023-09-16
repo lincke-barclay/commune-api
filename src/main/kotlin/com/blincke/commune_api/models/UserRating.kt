@@ -4,9 +4,10 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.joda.time.DateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -16,22 +17,21 @@ class UserRating(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
-    val submitter: User,
+    val submitter: CommuneUser,
 
     @ManyToOne
-    val recipient: User,
+    val recipient: CommuneUser,
 
     @ManyToOne
     val event: Event,
 
     @Column
     val explanation: String? = null,
-) {
-}
+)

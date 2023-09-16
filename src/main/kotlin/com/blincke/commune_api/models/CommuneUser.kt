@@ -3,24 +3,26 @@ package com.blincke.commune_api.models
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.util.Date
+import org.joda.time.DateTime
+import java.time.Instant
 import java.util.UUID
 
 @Entity
-class User(
+class CommuneUser(
     @Id
     val id: String = UUID.randomUUID().toString(),
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdTs: Date = Date(),
+    val createdTs: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val lastUpdatedTs: Date = Date(),
+    val lastUpdatedTs: Instant = Instant.now(),
 
     @Column(nullable = false)
     val email: String,
@@ -33,5 +35,4 @@ class User(
 
     @ManyToOne
     val home: Location,
-) {
-}
+)
