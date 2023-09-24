@@ -10,6 +10,7 @@ import java.util.*
 @Entity
 class Event(
     @Id
+//    @GeneratedValue(strategy = GenerationType.UUID)
     val id: String = UUID.randomUUID().toString(),
 
     @CreationTimestamp
@@ -31,24 +32,23 @@ class Event(
     val visibility: Visibility,
 
     @Column(nullable = false)
-    val startTime: DateTime,
+    val isProposal: Boolean, // Whether an event is abstract (a proposal) or not
 
     @Column(nullable = false)
-    val endTime: DateTime,
-
-    @Column
     val title: String,
 
     @Column
     val description: String? = null,
 
     @Column
+    val startTime: DateTime? = null, // Will be null for proposed events
+
+    @Column
+    val endTime: DateTime? = null, // Will be null for proposed events
+
+    @Column(nullable = false)
     val attendanceLimit: Int = 0, // Zero means unlimited attendance
 
     @Column(nullable = false)
-    val concrete: Boolean, // Whether an event is theoretical or not
-
-    @Column
-    val shareableDegree: Int, // Governs across how many social degrees the event can be shared
-) {
-}
+    val shareableDegree: Int = 0, // Governs across how many social degrees the event can be shared
+)

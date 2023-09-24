@@ -1,6 +1,6 @@
 package com.blincke.commune_api.controllers.dto
 
-data class UserRequestDto(
+data class CommuneUserRequestDto(
     val email: String,
     val firstName: String,
     val lastName: String,

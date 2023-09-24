@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class LocationService(
     private val locationRepository: LocationRepository,
 ) {
-    fun getOrCreateLocation(locationPoint: Point): Location {
+    fun getOrCreateLocationPoint(locationPoint: Point): Location {
         return locationRepository.getFirstByPoint(locationPoint)
             ?: locationRepository.save(Location(point = locationPoint))
     }

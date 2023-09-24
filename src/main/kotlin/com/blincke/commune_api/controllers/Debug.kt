@@ -1,7 +1,6 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.controllers.dto.*
-import com.blincke.commune_api.exceptions.UserNotFoundException
 import com.blincke.commune_api.repositories.LocationRepository
 import com.blincke.commune_api.repositories.UserRepository
 import org.slf4j.LoggerFactory
@@ -27,10 +26,10 @@ class Debug(
     }
 
     @GetMapping("/users")
-    fun getUsers(): ResponseEntity<List<UserResponseDto>> {
+    fun getUsers(): ResponseEntity<List<CommuneUserResponseDto>> {
         return try {
             ResponseEntity.ok(userRepository.findAll().map {
-                UserResponse(it)
+                toCommuneUserResponseDto(it)
             })
         } catch (e: Exception) {
             log.warn("Could not get new user with error", e)
@@ -42,7 +41,7 @@ class Debug(
     fun getLocations(): ResponseEntity<List<LocationResponseDto>> {
         return try {
             ResponseEntity.ok(locationRepository.findAll().map {
-                LocationResponse(it)
+                toLocationResponseDto(it)
             })
         } catch (e: Exception) {
             log.warn("Could not get new user with error", e)

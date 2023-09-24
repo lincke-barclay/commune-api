@@ -1,10 +1,10 @@
 package com.blincke.commune_api.controllers
 
-import com.blincke.commune_api.controllers.dto.UserRequestDto
-import com.blincke.commune_api.controllers.dto.UserResponse
-import com.blincke.commune_api.controllers.dto.UserResponseDto
+import com.blincke.commune_api.controllers.dto.CommuneUserRequestDto
+import com.blincke.commune_api.controllers.dto.toCommuneUserResponseDto
+import com.blincke.commune_api.controllers.dto.CommuneUserResponseDto
 import com.blincke.commune_api.exceptions.UserNotFoundException
-import com.blincke.commune_api.services.UserService
+import com.blincke.commune_api.services.CommuneUserService
 import org.slf4j.LoggerFactory
 import org.springframework.data.geo.Point
 import org.springframework.http.HttpStatus
@@ -20,19 +20,19 @@ import java.lang.Exception
 @RestController
 @RequestMapping("users")
 class UserController(
-    private val userService: UserService,
+    private val communeUserService: CommuneUserService,
 ) {
     private val log = LoggerFactory.getLogger(this.javaClass)
 
     @PostMapping
     fun createUser(
-        @RequestBody userRequestDto: UserRequestDto,
-    ): ResponseEntity<UserResponseDto> {
+        @RequestBody communeUserRequestDto: CommuneUserRequestDto,
+    ): ResponseEntity<CommuneUserResponseDto> {
         return try {
             ResponseEntity.ok(
-                UserResponse(
-                    with(userRequestDto) {
-                        userService.createUser(
+                toCommuneUserResponseDto(
+                    with(communeUserRequestDto) {
+                        communeUserService.createUser(
                             email = email,
                             firstName = firstName,
                             lastName = lastName,
@@ -50,10 +50,10 @@ class UserController(
     @GetMapping
     fun getUserByEmail(
         @RequestParam userEmail: String,
-    ): ResponseEntity<UserResponseDto> {
+    ): ResponseEntity<CommuneUserResponseDto> {
         return try {
             ResponseEntity.ok(
-                UserResponse(userService.getUserByEmail(userEmail = userEmail))
+                toCommuneUserResponseDto(communeUserService.getUserByEmail(userEmail = userEmail))
             )
         } catch (e: Exception) {
             log.warn("Could not get new user with error", e)
