@@ -10,7 +10,10 @@ class WebSecurityConfiguration {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests { auth ->
-            auth.anyRequest().authenticated()
+            auth
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .anyRequest().authenticated()
         }
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { }

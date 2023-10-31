@@ -1,37 +1,45 @@
 package com.blincke.commune_api.services
 
-import com.blincke.commune_api.exceptions.UserNotFoundException
-import com.blincke.commune_api.models.Location
-import com.blincke.commune_api.models.CommuneUser
-import com.blincke.commune_api.repositories.LocationRepository
+import com.blincke.commune_api.models.domain.users.egress.CreateUserResult
+import com.blincke.commune_api.models.domain.users.egress.GetCommuneUserResult
+import com.blincke.commune_api.models.domain.users.egress.GetPrivateUserResult
+import com.blincke.commune_api.models.domain.users.egress.GetPublicUserResult
+import com.blincke.commune_api.models.network.users.ingress.POSTUserRequestDto
 import com.blincke.commune_api.repositories.UserRepository
-import org.slf4j.LoggerFactory
-import org.springframework.data.geo.Point
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(
-    private val userRepository: UserRepository,
-    private val locationService: LocationService,
+        private val userRepository: UserRepository,
 ) {
-    private val log = LoggerFactory.getLogger(this.javaClass)
 
-    fun createUser(email: String, firstName: String, lastName: String, homePoint: Point): CommuneUser {
-        val homeLocation = locationService.getOrCreateLocation(locationPoint = homePoint)
-        return userRepository.save(
-            CommuneUser(
-                email = email,
-                firstName = firstName,
-                lastName = lastName,
-                home = homeLocation,
-            )
-        )
-    }
+    fun createUser(createUserRequest: POSTUserRequestDto): CreateUserResult =
+            when (val potentialConflict = getPublicUserByEmail(createUserRequest.email)) {
+                is GetPublicUserResult.Active -> CreateUserResult.Conflict(potentialConflict.user)
+                is GetPublicUserResult.DoesntExist -> try {
+                    CreateUserResult.Created(userRepository.save(createUserRequest.toNewCommuneUser()).toPublicUser())
+                } catch (e: Exception) {
+                    CreateUserResult.UnknownFailure
+                }
+            }
 
-    fun getUserByEmail(userEmail: String): CommuneUser {
-        return userRepository.findFirstByEmail(userEmail) ?: run {
-            log.info("No user found for email $userEmail")
-            throw UserNotFoundException()
-        }
-    }
+    fun getPublicUserByEmail(userEmail: String) =
+            userRepository.findFirstByEmail(userEmail)?.let {
+                GetPublicUserResult.Active(it.toPublicUser())
+            } ?: GetPublicUserResult.DoesntExist
+
+    fun getPrivateUserById(id: String) =
+            userRepository.findById(id).orElse(null)?.let {
+                GetPrivateUserResult.Active(it.toPrivateUser())
+            } ?: GetPrivateUserResult.DoesntExist
+
+    fun getPublicUserById(id: String) =
+            userRepository.findById(id).orElse(null)?.let {
+                GetPublicUserResult.Active(it.toPublicUser())
+            } ?: GetPublicUserResult.DoesntExist
+
+    fun getDatabaseUserById(id: String) =
+            userRepository.findById(id).orElse(null)?.let {
+                GetCommuneUserResult.Active(it)
+            } ?: GetCommuneUserResult.DoesntExist
 }
