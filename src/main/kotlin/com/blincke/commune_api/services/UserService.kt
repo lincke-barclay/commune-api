@@ -6,6 +6,7 @@ import com.blincke.commune_api.models.domain.users.egress.GetPrivateUserResult
 import com.blincke.commune_api.models.domain.users.egress.GetPublicUserResult
 import com.blincke.commune_api.models.network.users.ingress.POSTUserRequestDto
 import com.blincke.commune_api.repositories.UserRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -29,17 +30,17 @@ class UserService(
             } ?: GetPublicUserResult.DoesntExist
 
     fun getPrivateUserById(id: String) =
-            userRepository.findById(id).orElse(null)?.let {
+            userRepository.findByIdOrNull(id)?.let {
                 GetPrivateUserResult.Active(it.toPrivateUser())
             } ?: GetPrivateUserResult.DoesntExist
 
     fun getPublicUserById(id: String) =
-            userRepository.findById(id).orElse(null)?.let {
+            userRepository.findByIdOrNull(id)?.let {
                 GetPublicUserResult.Active(it.toPublicUser())
             } ?: GetPublicUserResult.DoesntExist
 
     fun getDatabaseUserById(id: String) =
-            userRepository.findById(id).orElse(null)?.let {
+            userRepository.findByIdOrNull(id)?.let {
                 GetCommuneUserResult.Active(it)
             } ?: GetCommuneUserResult.DoesntExist
 }
