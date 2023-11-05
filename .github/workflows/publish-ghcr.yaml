@@ -16,10 +16,13 @@ jobs:
           architecture: x64
       - name: Build mvn package
         run: mvn clean package
+
   publish_docker_container:
     needs: "build_and_test"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Push to Container Repository
         run: |
           docker login --username lincketheo --password ${{ secrets.GH_PAT }} ghcr.io
