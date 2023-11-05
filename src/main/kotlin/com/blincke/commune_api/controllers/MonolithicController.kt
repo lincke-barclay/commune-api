@@ -51,6 +51,15 @@ class MonolithicController(
                 is GetPublicUserResult.Active -> ResponseEntity.ok(result.user.toUserResponseDto())
             }
 
+    @GetMapping("/users/{userId}")
+    fun getMyUser(
+            @PathVariable("userId") userId: String,
+            @AuthenticationPrincipal principal: CommuneUser,
+    ) = runAuthorized(principal.id, userId) {
+        // Already had to fetch user data when authenticating
+        ResponseEntity.ok(principal.toPrivateUser())
+    }
+
 
     /**
      * SECTION: Events
@@ -103,8 +112,8 @@ class MonolithicController(
     @PostMapping("/users/{userId}/events")
     fun createNewEvent(
             @AuthenticationPrincipal principal: CommuneUser,
-            @RequestBody createEventRequest: POSTEventRequestDTO,
             @PathVariable("userId") userId: String,
+            @RequestBody createEventRequest: POSTEventRequestDTO,
     ) = runAuthorized(userId, principal.id) {
         when (val result = eventService.createNewEvent(createEventRequest, principal)) {
             is CreateEventResult.Created -> ResponseEntity.ok(result.event)

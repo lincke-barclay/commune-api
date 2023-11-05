@@ -1,0 +1,37 @@
+name: Docker Image Push to GHCR
+
+on:
+  push
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11 for x64
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'corretto'
+          architecture: x64
+  publish_docker_container:
+    needs: "build_and_test"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to Container Repository
+        run: |
+          docker login --username lincketheo --password ${{ secrets.GH_PAT }} ghcr.io
+          docker build . -t ghcr.io/lincketheo/communeo-api:latest
+          docker push ghcr.io/lincketheo/communeo-api:latest
+  deploy:
+    needs: "publish_docker_container"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executing ssh command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LINODE_HOST }}
+          username: ${{ secrets.LINODE_GITHUB_USERNAME }}
+          key: ${{ secrets.LINODE_GITHUB_SSH_KEY }}
+          port: ${{ secrets.LINODE_SSH_PORT }}
+          script: echo '${{ secrets.LINODE_GITHUB_PASSWORD }}' | sudo -S systemctl restart communeo-api
