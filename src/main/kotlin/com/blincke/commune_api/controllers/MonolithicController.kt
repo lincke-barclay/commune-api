@@ -44,7 +44,7 @@ class MonolithicController(
 
     @GetMapping("/users")
     fun getUserByEmail(
-            @RequestParam userEmail: String
+            @RequestParam("email") userEmail: String
     ): ResponseEntity<PublicUserResponseDto> =
             when (val result = userService.getPublicUserByEmail(userEmail = userEmail)) {
                 is GetPublicUserResult.DoesntExist -> ResponseEntity.notFound().build()
