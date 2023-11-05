@@ -9,9 +9,9 @@ import jakarta.persistence.ManyToOne
 @Embeddable
 data class FriendshipId(
         @ManyToOne
-        @JoinColumn(name = "requester", referencedColumnName = "id")
+        @JoinColumn(name = "requester", referencedColumnName = "firebase_id")
         val requester: CommuneUser,
         @ManyToOne
-        @JoinColumn(name = "recipient", referencedColumnName = "id")
+        @JoinColumn(name = "recipient", referencedColumnName = "firebase_id")
         val recipient: CommuneUser,
 )

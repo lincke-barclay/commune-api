@@ -6,7 +6,6 @@ package com.blincke.commune_api.models.domain.users
  * not authorized) can get it
  */
 data class PublicUser(
+        val name: String,
         val id: String,
-        val firstName: String,
-        val lastName: String,
 )

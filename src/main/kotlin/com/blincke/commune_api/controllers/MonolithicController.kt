@@ -1,25 +1,26 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.common.runAuthorized
+import com.blincke.commune_api.common.runAuthorizedOrElse
 import com.blincke.commune_api.models.database.users.CommuneUser
 import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
 import com.blincke.commune_api.models.domain.events.egress.DeleteEventResponse
 import com.blincke.commune_api.models.domain.events.egress.GetMyEventResult
 import com.blincke.commune_api.models.domain.friends.egress.DeleteFriendRequestResult
 import com.blincke.commune_api.models.domain.friends.egress.FriendRequestResult
-import com.blincke.commune_api.models.domain.users.egress.CreateUserResult
 import com.blincke.commune_api.models.domain.users.egress.GetPublicUserResult
+import com.blincke.commune_api.models.network.events.egress.toPrivateEventResponseDto
+import com.blincke.commune_api.models.network.events.egress.toPublicEventResponseDto
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
-import com.blincke.commune_api.models.network.users.egress.PublicUserResponseDto
-import com.blincke.commune_api.models.network.users.egress.toUserResponseDto
-import com.blincke.commune_api.models.network.users.ingress.POSTUserRequestDto
+import com.blincke.commune_api.models.network.users.egress.toPrivateUserResponseDto
+import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
 import com.blincke.commune_api.services.EventService
 import com.blincke.commune_api.services.FriendService
 import com.blincke.commune_api.services.UserService
-import org.springframework.data.repository.query.Param
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*
 
 // TODO - split this into sub controllers like this https://stackoverflow.com/questions/40328835/sub-resources-in-spring-rest
@@ -33,67 +34,59 @@ class MonolithicController(
     /**
      * SECTION: users
      */
-    @PostMapping("/users")
-    fun createUser(
-            @RequestBody userRequest: POSTUserRequestDto
-    ): ResponseEntity<PublicUserResponseDto> = when (val result = userService.createUser(userRequest)) {
-        is CreateUserResult.Created -> ResponseEntity.ok(result.user.toUserResponseDto())
-        is CreateUserResult.UnknownFailure -> ResponseEntity.internalServerError().build()
-        is CreateUserResult.Conflict -> ResponseEntity.status(HttpStatus.CONFLICT).build()
-    }
-
-    @GetMapping("/users")
-    fun getUserByEmail(
-            @RequestParam("email") userEmail: String
-    ): ResponseEntity<PublicUserResponseDto> =
-            when (val result = userService.getPublicUserByEmail(userEmail = userEmail)) {
-                is GetPublicUserResult.DoesntExist -> ResponseEntity.notFound().build()
-                is GetPublicUserResult.Active -> ResponseEntity.ok(result.user.toUserResponseDto())
-            }
-
     @GetMapping("/users/{userId}")
     fun getMyUser(
             @PathVariable("userId") userId: String,
-            @AuthenticationPrincipal principal: CommuneUser,
-    ) = runAuthorized(principal.id, userId) {
-        // Already had to fetch user data when authenticating
-        ResponseEntity.ok(principal.toPrivateUser())
-    }
-
+            principal: JwtAuthenticationToken,
+    ) = userService.runAuthorizedOrElse(
+            userId,
+            principal,
+            authorizedBody = { me ->
+                ResponseEntity.ok(me.toPrivateUser().toPrivateUserResponseDto())
+            },
+            unauthorizedBody = { _ ->
+                when (val notMeResult = userService.getPublicUserById(userId)) {
+                    is GetPublicUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
+                    is GetPublicUserResult.DoesntExist -> ResponseEntity.notFound().build()
+                }
+            }
+    )
 
     /**
      * SECTION: Events
      */
     @GetMapping("/users/{userId}/events/feed")
-    fun getFeedForUser(
-            @AuthenticationPrincipal principal: CommuneUser,
+    fun getMyFeed(
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
-        ResponseEntity.ok(eventService.getMyFeed(principal, page, pageSize))
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
+        ResponseEntity.ok(eventService.getMyFeed(it, page, pageSize)
+                .map { event -> event.toPublicEventResponseDto() })
     }
 
     @GetMapping("/users/{userId}/events/suggested")
     fun getMySuggestedEvents(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
         // TODO
-        ResponseEntity.ok(eventService.getMySuggestedEvents(principal, page, pageSize))
+        ResponseEntity.ok(eventService.getMySuggestedEvents(it, page, pageSize)
+                .map { event -> event.toPublicEventResponseDto() })
     }
 
-    @GetMapping("/users/{userId}/events/{eventId}")
+    @GetMapping("users/{userId}/events/{eventId}")
     fun getMyEvent(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @PathVariable("eventId") eventId: String,
-    ) = runAuthorized(userId, principal.id) {
-        when (val result = eventService.getMyEvent(principal, eventId)) {
+    ) = userService.runAuthorized(userId, principal) {
+        when (val result = eventService.getMyEvent(it, eventId)) {
             is GetMyEventResult.DoesntExist -> ResponseEntity.notFound().build()
-            is GetMyEventResult.Exists -> ResponseEntity.ok(result.event)
+            is GetMyEventResult.Exists -> ResponseEntity.ok(result.event.toPrivateEventResponseDto())
             is GetMyEventResult.GenericError -> ResponseEntity.internalServerError().build()
             is GetMyEventResult.NotMine -> ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
@@ -101,33 +94,34 @@ class MonolithicController(
 
     @GetMapping("/users/{userId}/events")
     fun getMyEvents(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
-        ResponseEntity.ok(eventService.getMyEvents(principal, page, pageSize))
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
+        ResponseEntity.ok(eventService.getMyEvents(it, page, pageSize)
+                .map { event -> event.toPrivateEventResponseDto() })
     }
 
     @PostMapping("/users/{userId}/events")
     fun createNewEvent(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @RequestBody createEventRequest: POSTEventRequestDTO,
-    ) = runAuthorized(userId, principal.id) {
-        when (val result = eventService.createNewEvent(createEventRequest, principal)) {
-            is CreateEventResult.Created -> ResponseEntity.ok(result.event)
+    ) = userService.runAuthorized(userId, principal) {
+        when (val result = eventService.createNewEvent(createEventRequest, it)) {
+            is CreateEventResult.Created -> ResponseEntity.ok(result.event.toPrivateEventResponseDto())
             is CreateEventResult.GenericError -> ResponseEntity.internalServerError().build()
         }
     }
 
     @DeleteMapping("/users/{userId}/events/{eventId}")
     fun deleteMyEvent(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @PathVariable("eventId") eventId: String,
-    ) = runAuthorized(userId, principal.id) {
-        when (eventService.deleteEvent(principal, eventId)) {
+    ) = userService.runAuthorized(userId, principal) {
+        when (eventService.deleteEvent(it, eventId)) {
             is DeleteEventResponse.Deleted -> ResponseEntity.notFound().build<Unit>()
             is DeleteEventResponse.DoesntExist -> ResponseEntity.notFound().build()
             is DeleteEventResponse.GenericError -> ResponseEntity.internalServerError().build()
@@ -142,9 +136,9 @@ class MonolithicController(
     fun getConfirmedFriends(
             @AuthenticationPrincipal principal: CommuneUser,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = if (principal.id == userId) {
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = if (principal.firebaseId == userId) {
         ResponseEntity.ok(friendService.getMyConfirmedFriends(principal, page, pageSize))
     } else {
         ResponseEntity.ok(friendService.getSomeoneElsesConfirmedFriends(userId, page, pageSize)) // TODO - how should this be restricted if any?
@@ -152,41 +146,41 @@ class MonolithicController(
 
     @GetMapping("/users/{userId}/pending-friends/from-me")
     fun getFriendsIRequested(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
-        ResponseEntity.ok(friendService.getFriendRequestsISentThatArePending(principal, page, pageSize))
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
+        ResponseEntity.ok(friendService.getFriendRequestsISentThatArePending(it, page, pageSize))
     }
 
     @GetMapping("/users/{userId}/pending-friends/to-me")
     fun getFriendsRequestedToMe(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
-        ResponseEntity.ok(friendService.getFriendRequestsSentToMeThatArePending(principal, page, pageSize))
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
+        ResponseEntity.ok(friendService.getFriendRequestsSentToMeThatArePending(it, page, pageSize))
     }
 
     @GetMapping("/users/{userId}/suggested-friends")
     fun getSuggestedFriendsForMe(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
-            @Param("page") page: Int,
-            @Param("pageSize") pageSize: Int,
-    ) = runAuthorized(userId, principal.id) {
-        ResponseEntity.ok(friendService.getSuggestedFriendsForMe(principal, page, pageSize))
+            @RequestParam("page", required = true) page: Int,
+            @RequestParam("pageSize", required = true) pageSize: Int,
+    ) = userService.runAuthorized(userId, principal) {
+        ResponseEntity.ok(friendService.getSuggestedFriendsForMe(it, page, pageSize))
     }
 
     @PostMapping("/users/{requesterId}/friends/{recipientId}")
     fun transitionOrInitiateFriendship(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("requesterId") requesterId: String,
             @PathVariable("recipientId") recipientId: String,
-    ) = runAuthorized(requesterId, principal.id) {
-        when (friendService.initiateOrTransitionFriend(principal, recipientId)) {
+    ) = userService.runAuthorized(requesterId, principal) {
+        when (friendService.initiateOrTransitionFriend(it, recipientId)) {
             is FriendRequestResult.NothingToDo -> ResponseEntity.noContent().build<Unit>()
             is FriendRequestResult.Accepted -> ResponseEntity.status(HttpStatus.CREATED).build()
             is FriendRequestResult.Created -> ResponseEntity.status(HttpStatus.CREATED).build()
@@ -197,11 +191,11 @@ class MonolithicController(
 
     @DeleteMapping("/users/{requesterId}/friends/{toDeleteId}")
     fun deleteFriendship(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("requesterId") requesterId: String,
             @PathVariable("toDeleteId") toDeleteId: String,
-    ) = runAuthorized(requesterId, principal.id) {
-        when (friendService.deleteFriendship(principal, toDeleteId)) {
+    ) = userService.runAuthorized(requesterId, principal) {
+        when (friendService.deleteFriendship(it, toDeleteId)) {
             is DeleteFriendRequestResult.Succeeded -> ResponseEntity.status(204).build<Unit>()
             is DeleteFriendRequestResult.RecipientDoesntExist -> ResponseEntity.status(404).build()
             is DeleteFriendRequestResult.FriendshipDoesntExist -> ResponseEntity.status(404).build()

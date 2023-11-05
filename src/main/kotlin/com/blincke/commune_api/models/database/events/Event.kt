@@ -6,7 +6,6 @@ import com.blincke.commune_api.models.domain.events.PublicEvent
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import org.joda.time.DateTime
 import java.time.Instant
 import java.util.*
 
@@ -26,14 +25,14 @@ class Event(
         val lastUpdatedTs: Instant = Instant.now(),
 
         @ManyToOne
-        @JoinColumn(name = "owner", referencedColumnName = "id")
+        @JoinColumn(name = "owner", referencedColumnName = "firebase_id")
         val owner: CommuneUser,
 
         @Column(name = "starting_datetime_utc", nullable = false)
-        val startDateTime: DateTime,
+        val startDateTime: Instant,
 
         @Column(name = "ending_datetime_utc", nullable = false)
-        val endDateTime: DateTime,
+        val endDateTime: Instant,
 
         @Column(name = "title", nullable = false)
         val title: String,

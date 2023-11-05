@@ -4,33 +4,19 @@ import com.blincke.commune_api.models.database.friends.Friendship
 import com.blincke.commune_api.models.domain.users.PrivateUser
 import com.blincke.commune_api.models.domain.users.PublicUser
 import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
-import java.time.Instant
-import java.util.*
 
 @Entity
 @Table(name = "commune_user")
 class CommuneUser(
         @Id
-        val id: String = UUID.randomUUID().toString(),
+        @Column(name = "firebase_id")
+        val firebaseId: String,
 
-        @CreationTimestamp
-        @Column(name = "created_timestamp_utc", nullable = false, updatable = false)
-        val createdTs: Instant = Instant.now(),
+        @Column(name = "name")
+        val name: String,
 
-        @UpdateTimestamp
-        @Column(name = "last_updated_timestamp_utc", nullable = false)
-        val lastUpdatedTs: Instant = Instant.now(),
-
-        @Column(name = "email", nullable = false, unique = true)
+        @Column(name = "email")
         val email: String,
-
-        @Column(name = "first_name", nullable = false)
-        val firstName: String,
-
-        @Column(name = "last_name", nullable = false)
-        val lastName: String,
 
         @OneToMany(mappedBy = "friendshipId.requester")
         val requestedFriends: Set<Friendship>,
@@ -39,17 +25,28 @@ class CommuneUser(
         val recipientToFriendRequests: Set<Friendship>
 ) {
     fun toPublicUser() = PublicUser(
-            id = id,
-            firstName = firstName,
-            lastName = lastName,
+            name = name,
+            id = firebaseId,
     )
 
-    fun toPrivateUser() = PrivateUser(
-            id = id,
-            createdTs = createdTs,
-            lastUpdatedTs = lastUpdatedTs,
+    fun toPrivateUser(
+    ) = PrivateUser(
+            id = firebaseId,
+            name = name,
             email = email,
-            firstName = firstName,
-            lastName = lastName,
+    )
+
+    fun copy(
+            firebaseId: String? = null,
+            name: String? = null,
+            email: String? = null,
+            requestedFriends: Set<Friendship>? = null,
+            recipientToFriendRequests: Set<Friendship>? = null,
+    ) = CommuneUser(
+            firebaseId = firebaseId ?: this.firebaseId,
+            name = name ?: this.name,
+            email = email ?: this.email,
+            requestedFriends = requestedFriends ?: this.requestedFriends,
+            recipientToFriendRequests = recipientToFriendRequests ?: this.recipientToFriendRequests,
     )
 }

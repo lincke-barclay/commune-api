@@ -5,9 +5,7 @@ import com.blincke.commune_api.models.database.users.CommuneUser
 import com.blincke.commune_api.models.domain.friends.egress.DeleteFriendRequestResult
 import com.blincke.commune_api.models.domain.friends.egress.FriendRequestResult
 import com.blincke.commune_api.models.domain.users.egress.GetCommuneUserResult
-import com.blincke.commune_api.models.domain.users.egress.GetPrivateUserResult
 import com.blincke.commune_api.models.domain.users.egress.GetPublicUserResult
-import com.blincke.commune_api.repositories.UserRepository
 import org.springframework.stereotype.Service
 
 // TODO - right now these are returning friendships - return users instead

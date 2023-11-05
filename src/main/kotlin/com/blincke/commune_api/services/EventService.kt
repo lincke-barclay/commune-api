@@ -32,7 +32,7 @@ class EventService(
             eventId: String,
     ) = try {
         eventRepository.findFirstById(eventId)?.let {
-            if (it.owner.id != requester.id) {
+            if (it.owner.firebaseId != requester.firebaseId) {
                 GetMyDatabaseEventResult.NotMine
             } else {
                 GetMyDatabaseEventResult.Exists(event = it)
@@ -47,7 +47,7 @@ class EventService(
             eventId: String,
     ) = try {
         eventRepository.findFirstById(eventId)?.let {
-            if (it.owner.id != requester.id) {
+            if (it.owner.firebaseId != requester.firebaseId) {
                 GetMyEventResult.NotMine
             } else {
                 GetMyEventResult.Exists(event = it.toPrivateEvent())
