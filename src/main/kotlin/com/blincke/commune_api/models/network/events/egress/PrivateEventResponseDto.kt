@@ -1,8 +1,6 @@
 package com.blincke.commune_api.models.network.events.egress
 
-import com.blincke.commune_api.models.domain.events.PrivateEvent
-import com.blincke.commune_api.models.network.users.egress.PrivateUserResponseDto
-import com.blincke.commune_api.models.network.users.egress.toPrivateUserResponseDto
+import com.blincke.commune_api.models.database.events.Event
 import java.time.Instant
 
 data class PrivateEventResponseDto(
@@ -16,7 +14,7 @@ data class PrivateEventResponseDto(
         val longDescription: String,
 )
 
-fun PrivateEvent.toPrivateEventResponseDto() = PrivateEventResponseDto(
+fun Event.toPrivateEventResponseDto() = PrivateEventResponseDto(
         id = id,
         createdTs = createdTs,
         lastUpdatedTs = lastUpdatedTs,

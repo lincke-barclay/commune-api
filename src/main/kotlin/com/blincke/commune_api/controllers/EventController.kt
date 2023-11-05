@@ -1,15 +1,12 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.common.runAuthorized
-import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
-import com.blincke.commune_api.models.domain.events.egress.DeleteEventResponse
-import com.blincke.commune_api.models.domain.events.egress.GetMyEventResult
+import com.blincke.commune_api.models.domain.events.egress.GetEventResult
+import com.blincke.commune_api.models.network.events.egress.toMinimalPublicEventListDto
 import com.blincke.commune_api.models.network.events.egress.toPrivateEventResponseDto
-import com.blincke.commune_api.models.network.events.egress.toPublicEventResponseDto
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
 import com.blincke.commune_api.services.EventService
 import com.blincke.commune_api.services.UserService
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*
@@ -26,8 +23,8 @@ class EventController(
             @PathVariable("userId") userId: String,
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
-    ) = userService.runAuthorized(userId, principal) {
-        ResponseEntity.ok(eventService.getMyEvents(it, page, pageSize)
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        ResponseEntity.ok(eventService.getEventsOfUser(requestingUser, page, pageSize)
                 .map { event -> event.toPrivateEventResponseDto() })
     }
 
@@ -36,10 +33,9 @@ class EventController(
             principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @RequestBody createEventRequest: POSTEventRequestDTO,
-    ) = userService.runAuthorized(userId, principal) {
-        when (val result = eventService.createNewEvent(createEventRequest, it)) {
-            is CreateEventResult.Created -> ResponseEntity.ok(result.event.toPrivateEventResponseDto())
-            is CreateEventResult.GenericError -> ResponseEntity.internalServerError().build()
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        when (val result = eventService.createNewEvent(createEventRequest, requestingUser)) {
+            else -> ResponseEntity.ok(result.event.toPrivateEventResponseDto())
         }
     }
 
@@ -49,9 +45,9 @@ class EventController(
             @PathVariable("userId") userId: String,
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
-    ) = userService.runAuthorized(userId, principal) {
-        ResponseEntity.ok(eventService.getMyFeed(it, page, pageSize)
-                .map { event -> event.toPublicEventResponseDto() })
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        ResponseEntity.ok(eventService.getMyFeed(requestingUser, page, pageSize)
+                .toMinimalPublicEventListDto())
     }
 
     @GetMapping("/suggested")
@@ -60,10 +56,9 @@ class EventController(
             @PathVariable("userId") userId: String,
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
-    ) = userService.runAuthorized(userId, principal) {
-        // TODO
-        ResponseEntity.ok(eventService.getMySuggestedEvents(it, page, pageSize)
-                .map { event -> event.toPublicEventResponseDto() })
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        ResponseEntity.ok(eventService.getMySuggestedEvents(requestingUser, page, pageSize)
+                .toMinimalPublicEventListDto())
     }
 
     @GetMapping("/{eventId}")
@@ -71,12 +66,14 @@ class EventController(
             principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @PathVariable("eventId") eventId: String,
-    ) = userService.runAuthorized(userId, principal) {
-        when (val result = eventService.getMyEvent(it, eventId)) {
-            is GetMyEventResult.DoesntExist -> ResponseEntity.notFound().build()
-            is GetMyEventResult.Exists -> ResponseEntity.ok(result.event.toPrivateEventResponseDto())
-            is GetMyEventResult.GenericError -> ResponseEntity.internalServerError().build()
-            is GetMyEventResult.NotMine -> ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        when (val result = eventService.getEventById(eventId)) {
+            is GetEventResult.DoesntExist -> ResponseEntity.notFound().build()
+            is GetEventResult.Exists -> {
+                runAuthorized(result.event.owner.firebaseId, requestingUser) {
+                    ResponseEntity.ok(result.event.toPrivateEventResponseDto())
+                }
+            }
         }
     }
 
@@ -85,12 +82,14 @@ class EventController(
             principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @PathVariable("eventId") eventId: String,
-    ) = userService.runAuthorized(userId, principal) {
-        when (eventService.deleteEvent(it, eventId)) {
-            is DeleteEventResponse.Deleted -> ResponseEntity.notFound().build<Unit>()
-            is DeleteEventResponse.DoesntExist -> ResponseEntity.notFound().build()
-            is DeleteEventResponse.GenericError -> ResponseEntity.internalServerError().build()
-            is DeleteEventResponse.NotMine -> ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+    ) = userService.runAuthorized(userId, principal) { requestingUser ->
+        when (val getResult = eventService.getEventById(eventId)) {
+            is GetEventResult.DoesntExist -> ResponseEntity.notFound().build()
+            is GetEventResult.Exists -> {
+                runAuthorized(getResult.event.owner.firebaseId, requestingUser) {
+                    ResponseEntity.ok(eventService.deleteEvent(getResult.event))
+                }
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.blincke.commune_api.models.network.users.egress
 
-import com.blincke.commune_api.models.domain.users.PrivateUser
+import com.blincke.commune_api.models.database.users.User
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,9 +10,9 @@ data class PrivateUserResponseDto(
         val email: String,
 )
 
-fun PrivateUser.toPrivateUserResponseDto() =
+fun User.toPrivateUserResponseDto() =
         PrivateUserResponseDto(
-                id = id,
+                id = firebaseId,
                 name = name,
                 email = email,
         )

@@ -2,13 +2,13 @@ package com.blincke.commune_api.models.domain.friends.egress
 
 sealed interface FriendRequestResult {
     // A new friendship was created
-    object Created : FriendRequestResult
+    data object Created : FriendRequestResult
 
     // An existing friend request was accepted
-    object Accepted : FriendRequestResult
+    data object Accepted : FriendRequestResult
 
     // You've already made a friend request to this user and nothing changed
-    object NothingToDo : FriendRequestResult
+    data object NothingToDo : FriendRequestResult
 
-    object RecipientDoesntExist : FriendRequestResult
+    data object RecipientDoesntExist : FriendRequestResult
 }

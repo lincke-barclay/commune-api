@@ -1,8 +1,6 @@
 package com.blincke.commune_api.models.database.events
 
-import com.blincke.commune_api.models.database.users.CommuneUser
-import com.blincke.commune_api.models.domain.events.PrivateEvent
-import com.blincke.commune_api.models.domain.events.PublicEvent
+import com.blincke.commune_api.models.database.users.User
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -26,7 +24,7 @@ class Event(
 
         @ManyToOne
         @JoinColumn(name = "owner", referencedColumnName = "firebase_id")
-        val owner: CommuneUser,
+        val owner: User,
 
         @Column(name = "starting_datetime_utc", nullable = false)
         val startDateTime: Instant,
@@ -42,26 +40,5 @@ class Event(
 
         @Column(name = "long_description", nullable = false)
         val longDescription: String,
-) {
-    fun toPublicEvent() = PublicEvent(
-            id = id,
-            owner = owner.toPublicUser(),
-            startDateTime = startDateTime,
-            endDateTime = endDateTime,
-            title = title,
-            shortDescription = shortDescription,
-            longDescription = longDescription,
-    )
+)
 
-    fun toPrivateEvent() = PrivateEvent(
-            id = id,
-            createdTs = createdTs,
-            lastUpdatedTs = lastUpdatedTs,
-            owner = owner.toPrivateUser(),
-            startDateTime = startDateTime,
-            endDateTime = endDateTime,
-            title = title,
-            shortDescription = shortDescription,
-            longDescription = longDescription,
-    )
-}

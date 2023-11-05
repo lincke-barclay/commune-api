@@ -1,7 +1,7 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.common.runAuthorizedOrElse
-import com.blincke.commune_api.models.domain.users.egress.GetPublicUserResult
+import com.blincke.commune_api.models.domain.users.egress.GetUserResult
 import com.blincke.commune_api.models.network.users.egress.toPrivateUserResponseDto
 import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
 import com.blincke.commune_api.services.UserService
@@ -25,12 +25,12 @@ class UserController(
             userId,
             principal,
             authorizedBody = { me ->
-                ResponseEntity.ok(me.toPrivateUser().toPrivateUserResponseDto())
+                ResponseEntity.ok(me.toPrivateUserResponseDto())
             },
             unauthorizedBody = { _ ->
-                when (val notMeResult = userService.getPublicUserById(userId)) {
-                    is GetPublicUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
-                    is GetPublicUserResult.DoesntExist -> ResponseEntity.notFound().build()
+                when (val notMeResult = userService.getUserById(userId)) {
+                    is GetUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
+                    is GetUserResult.DoesntExist -> ResponseEntity.notFound().build()
                 }
             }
     )

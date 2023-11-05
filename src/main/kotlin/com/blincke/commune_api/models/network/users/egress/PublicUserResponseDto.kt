@@ -1,15 +1,15 @@
 package com.blincke.commune_api.models.network.users.egress
 
-import com.blincke.commune_api.models.domain.users.PublicUser
+import com.blincke.commune_api.models.database.users.User
 
 data class PublicUserResponseDto(
         val id: String,
         val name: String,
 )
 
-fun PublicUser.toPublicUserResponseDto() =
+fun User.toPublicUserResponseDto() =
         PublicUserResponseDto(
-                id = id,
+                id = firebaseId,
                 name = name,
         )
 

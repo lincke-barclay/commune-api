@@ -1,14 +1,14 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.common.runAuthorized
-import com.blincke.commune_api.models.database.users.CommuneUser
+import com.blincke.commune_api.common.runAuthorizedOrElse
 import com.blincke.commune_api.models.domain.friends.egress.DeleteFriendRequestResult
 import com.blincke.commune_api.models.domain.friends.egress.FriendRequestResult
+import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
 import com.blincke.commune_api.services.FriendService
 import com.blincke.commune_api.services.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*
 
@@ -20,15 +20,20 @@ class FriendsController(
 ) {
     @GetMapping
     fun getConfirmedFriends(
-            @AuthenticationPrincipal principal: CommuneUser,
+            principal: JwtAuthenticationToken,
             @PathVariable("userId") userId: String,
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
-    ) = if (principal.firebaseId == userId) {
-        ResponseEntity.ok(friendService.getMyConfirmedFriends(principal, page, pageSize))
-    } else {
-        ResponseEntity.ok(friendService.getSomeoneElsesConfirmedFriends(userId, page, pageSize)) // TODO - how should this be restricted if any?
-    }
+    ) = userService.runAuthorizedOrElse(
+            userId,
+            principal,
+            authorizedBody = {
+                ResponseEntity.ok(friendService.getConfirmedFriends(it, page, pageSize).map { friend -> friend.toPublicUserResponseDto() })
+            },
+            unauthorizedBody = {
+                ResponseEntity.ok(friendService.getConfirmedFriendsById(userId, page, pageSize).map { it.toPublicUserResponseDto() }) // TODO - how should this be restricted if any?
+            }
+    )
 
     @GetMapping("/pending/from-me")
     fun getFriendsIRequested(
@@ -37,7 +42,8 @@ class FriendsController(
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
     ) = userService.runAuthorized(userId, principal) {
-        ResponseEntity.ok(friendService.getFriendRequestsISentThatArePending(it, page, pageSize))
+        ResponseEntity.ok(friendService.getFriendRequestsUserSentThatArePending(it, page, pageSize)
+                .map { friend -> friend.toPublicUserResponseDto() })
     }
 
     @GetMapping("/pending/to-me")
@@ -47,7 +53,8 @@ class FriendsController(
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
     ) = userService.runAuthorized(userId, principal) {
-        ResponseEntity.ok(friendService.getFriendRequestsSentToMeThatArePending(it, page, pageSize))
+        ResponseEntity.ok(friendService.getFriendRequestsSentToUserThatArePending(it, page, pageSize)
+                .map { friend -> friend.toPublicUserResponseDto() })
     }
 
     @GetMapping("/suggested")
@@ -57,7 +64,8 @@ class FriendsController(
             @RequestParam("page", required = true) page: Int,
             @RequestParam("pageSize", required = true) pageSize: Int,
     ) = userService.runAuthorized(userId, principal) {
-        ResponseEntity.ok(friendService.getSuggestedFriendsForMe(it, page, pageSize))
+        ResponseEntity.ok(friendService.getSuggestedFriendsForUser(it, page, pageSize)
+                .map { friend -> friend.toPublicUserResponseDto() })
     }
 
     @PostMapping("/{recipientId}")

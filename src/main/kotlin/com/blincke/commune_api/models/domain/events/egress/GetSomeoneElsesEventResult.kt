@@ -4,5 +4,5 @@ import com.blincke.commune_api.models.database.events.Event
 
 sealed interface GetSomeoneElsesEventResult {
     data class Exists(val event: Event) : GetSomeoneElsesEventResult
-    object DoesntExist : GetSomeoneElsesEventResult
+    data object DoesntExist : GetSomeoneElsesEventResult
 }

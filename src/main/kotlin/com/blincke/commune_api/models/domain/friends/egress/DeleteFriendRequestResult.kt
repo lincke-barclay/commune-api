@@ -1,7 +1,7 @@
 package com.blincke.commune_api.models.domain.friends.egress
 
 sealed interface DeleteFriendRequestResult {
-    object Succeeded : DeleteFriendRequestResult
-    object FriendshipDoesntExist : DeleteFriendRequestResult
-    object RecipientDoesntExist : DeleteFriendRequestResult
+    data object Succeeded : DeleteFriendRequestResult
+    data object FriendshipDoesntExist : DeleteFriendRequestResult
+    data object RecipientDoesntExist : DeleteFriendRequestResult
 }

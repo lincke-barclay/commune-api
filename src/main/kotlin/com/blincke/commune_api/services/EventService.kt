@@ -1,113 +1,51 @@
 package com.blincke.commune_api.services
 
-import com.blincke.commune_api.models.database.users.CommuneUser
+import com.blincke.commune_api.models.database.events.Event
+import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
-import com.blincke.commune_api.models.domain.events.egress.DeleteEventResponse
-import com.blincke.commune_api.models.domain.events.egress.GetMyDatabaseEventResult
-import com.blincke.commune_api.models.domain.events.egress.GetMyEventResult
-import com.blincke.commune_api.models.domain.users.egress.GetCommuneUserResult
+import com.blincke.commune_api.models.domain.events.egress.DeleteEventResult
+import com.blincke.commune_api.models.domain.events.egress.GetEventResult
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
 import com.blincke.commune_api.repositories.EventRepository
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
 class EventService(
-        private val userService: UserService,
         private val eventRepository: EventRepository,
 ) {
-    fun getMyEvents(
-            requester: CommuneUser,
+    fun getEventsOfUser(
+            requester: User,
             page: Int,
             pageSize: Int,
-    ) = try {
-        eventRepository.findAllByOwner(requester, Pageable.ofSize(pageSize).withPage(page))
-                .map { it.toPrivateEvent() }
-    } catch (e: Exception) {
-        listOf()
-    }
+    ) = eventRepository.findAllByOwner(requester, Pageable.ofSize(pageSize).withPage(page))
 
-    fun getMyDatabaseEvent(
-            requester: CommuneUser,
+    fun getEventById(
             eventId: String,
-    ) = try {
-        eventRepository.findFirstById(eventId)?.let {
-            if (it.owner.firebaseId != requester.firebaseId) {
-                GetMyDatabaseEventResult.NotMine
-            } else {
-                GetMyDatabaseEventResult.Exists(event = it)
-            }
-        } ?: GetMyDatabaseEventResult.DoesntExist
-    } catch (e: Exception) {
-        GetMyDatabaseEventResult.GenericError
-    }
-
-    fun getMyEvent(
-            requester: CommuneUser,
-            eventId: String,
-    ) = try {
-        eventRepository.findFirstById(eventId)?.let {
-            if (it.owner.firebaseId != requester.firebaseId) {
-                GetMyEventResult.NotMine
-            } else {
-                GetMyEventResult.Exists(event = it.toPrivateEvent())
-            }
-        } ?: GetMyEventResult.DoesntExist
-    } catch (e: Exception) {
-        GetMyEventResult.GenericError
-    }
-
-    fun getSomeoneElsesEvents(
-            theirId: String,
-            page: Int,
-            pageSize: Int,
-    ) = when (val owner = userService.getDatabaseUserById(theirId)) {
-        is GetCommuneUserResult.Active -> listOf(eventRepository.findAllByOwner(owner.user, Pageable.ofSize(pageSize).withPage(page))
-                .map { it.toPublicEvent() })
-
-        is GetCommuneUserResult.DoesntExist -> listOf()
-    }
+    ) = eventRepository.findByIdOrNull(eventId)?.let {
+        GetEventResult.Exists(event = it)
+    } ?: GetEventResult.DoesntExist
 
     fun createNewEvent(
             postEventRequestDTO: POSTEventRequestDTO,
-            owner: CommuneUser,
-    ) = try {
-        CreateEventResult.Created(eventRepository.save(postEventRequestDTO.toDomain(owner)).toPrivateEvent())
-    } catch (e: Exception) {
-        CreateEventResult.GenericError
-    }
+            owner: User,
+    ) = CreateEventResult.Created(eventRepository.save(postEventRequestDTO.toDomain(owner)))
 
+    // TODO - algorithm
     fun getMyFeed(
-            requester: CommuneUser,
+            requester: User,
             page: Int,
             pageSize: Int,
-    ) = try {
-        eventRepository.findAllByOwnerNot(requester, Pageable.ofSize(pageSize).withPage(page))
-                .map { it.toPublicEvent() }
-    } catch (e: Exception) {
-        listOf()
-    }
+    ) = eventRepository.findAllByOwnerNot(requester, Pageable.ofSize(pageSize).withPage(page))
 
     fun getMySuggestedEvents(
-            requester: CommuneUser,
+            requester: User,
             page: Int,
             pageSize: Int,
-    ) = getMyFeed(requester, page, pageSize) // TODO
+    ) = getMyFeed(requester, page, pageSize) // TODO - algorithm
 
     fun deleteEvent(
-            requester: CommuneUser,
-            eventId: String,
-    ) = when (val result = getMyDatabaseEvent(requester, eventId)) {
-        is GetMyDatabaseEventResult.NotMine -> DeleteEventResponse.NotMine
-        is GetMyDatabaseEventResult.GenericError -> DeleteEventResponse.GenericError
-        is GetMyDatabaseEventResult.DoesntExist -> DeleteEventResponse.DoesntExist
-        is GetMyDatabaseEventResult.Exists -> {
-            try {
-                eventRepository.delete(result.event)
-                DeleteEventResponse.Deleted
-            } catch (e: Exception) {
-                DeleteEventResponse.GenericError
-            }
-        }
-    }
+            event: Event,
+    ) = eventRepository.delete(event)
 }

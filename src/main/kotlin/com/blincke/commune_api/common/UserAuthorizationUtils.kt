@@ -1,6 +1,6 @@
 package com.blincke.commune_api.common
 
-import com.blincke.commune_api.models.database.users.CommuneUser
+import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.users.egress.FindAndSyncFirebaseUserResult
 import com.blincke.commune_api.models.firebase.FirebaseUser
 import com.blincke.commune_api.services.UserService
@@ -32,20 +32,28 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  *      }
  * )
  */
+
+fun runAuthorizedOrElse(
+        resourceOwnerId: String,
+        principal: User,
+        authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
+        unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
+) = if (resourceOwnerId == principal.firebaseId) {
+    authorizedBody(principal)
+} else {
+    unauthorizedBody(principal)
+}
+
 fun UserService.runAuthorizedOrElse(
         resourceOwnerId: String,
         principal: JwtAuthenticationToken,
-        authorizedBody: (authorizedUser: CommuneUser) -> ResponseEntity<out Any?>,
-        unauthorizedBody: (unauthorizedUser: CommuneUser) -> ResponseEntity<out Any?>,
+        authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
+        unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
 ) = when (val parseResult = jwtToFirebaseUser(principal)) {
     is ParseJWTResult.EmailNotVerified -> ResponseEntity.status(HttpStatus.FORBIDDEN).body("Email Not Verified")
     is ParseJWTResult.Success -> {
         transformToCommuneUserAndRun(parseResult.firebaseUser) {
-            if (resourceOwnerId == parseResult.firebaseUser.uid) {
-                authorizedBody(it)
-            } else {
-                unauthorizedBody(it)
-            }
+            runAuthorizedOrElse(resourceOwnerId, it, authorizedBody, unauthorizedBody)
         }
     }
 
@@ -57,8 +65,16 @@ fun UserService.runAuthorizedOrElse(
 fun UserService.runAuthorized(
         resourceOwnerId: String,
         principal: JwtAuthenticationToken,
-        body: (unauthorizedUser: CommuneUser) -> ResponseEntity<out Any?>,
+        body: (authorizedUser: User) -> ResponseEntity<out Any?>,
 ) = runAuthorizedOrElse(resourceOwnerId, principal, authorizedBody = body) {
+    ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+}
+
+fun runAuthorized(
+        resourceOwnerId: String,
+        requester: User,
+        body: (authorizedUser: User) -> ResponseEntity<out Any?>,
+) = runAuthorizedOrElse(resourceOwnerId, requester, body) {
     ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 }
 
@@ -67,18 +83,19 @@ fun UserService.runAuthorized(
  * maybe change in the future to be just a generic transform, but
  * it just simplifies the calling code a bit for now - TODO - think about this more
  */
-private fun UserService.transformToCommuneUserAndRun(
+private
+
+fun UserService.transformToCommuneUserAndRun(
         firebaseUser: FirebaseUser,
-        body: (user: CommuneUser) -> ResponseEntity<out Any?>
+        body: (user: User) -> ResponseEntity<out Any?>
 ) = when (val userResult = findAndSyncDatabaseWithActiveFirebaseUser(firebaseUser)) {
     is FindAndSyncFirebaseUserResult.UserExistsAndIsUpToDate -> body(userResult.user)
     is FindAndSyncFirebaseUserResult.UserExistsAndWasUpdated -> body(userResult.user)
     is FindAndSyncFirebaseUserResult.CreatedNewUser -> body(userResult.user)
-    is FindAndSyncFirebaseUserResult.DatabaseError -> ResponseEntity.internalServerError().build()
 }
 
 private sealed interface ParseJWTResult {
-    object EmailNotVerified : ParseJWTResult
+    data object EmailNotVerified : ParseJWTResult
     data class JwtAttributeMissing(val missingAttributes: List<String>) : ParseJWTResult
     data class Success(val firebaseUser: FirebaseUser) : ParseJWTResult
 }

@@ -1,6 +1,6 @@
 package com.blincke.commune_api.models.database.friends
 
-import com.blincke.commune_api.models.database.users.CommuneUser
+import com.blincke.commune_api.models.database.users.User
 import jakarta.persistence.Embeddable
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -10,8 +10,8 @@ import jakarta.persistence.ManyToOne
 data class FriendshipId(
         @ManyToOne
         @JoinColumn(name = "requester", referencedColumnName = "firebase_id")
-        val requester: CommuneUser,
+        val requester: User,
         @ManyToOne
         @JoinColumn(name = "recipient", referencedColumnName = "firebase_id")
-        val recipient: CommuneUser,
+        val recipient: User,
 )
