@@ -1,8 +1,6 @@
 package com.blincke.commune_api.models.network.events.egress
 
 import com.blincke.commune_api.models.database.events.Event
-import com.blincke.commune_api.models.network.users.egress.PublicUserResponseDto
-import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
 import java.time.Instant
 
 data class PublicEventResponseDto(

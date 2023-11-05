@@ -3,7 +3,6 @@ package com.blincke.commune_api.services
 import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
-import com.blincke.commune_api.models.domain.events.egress.DeleteEventResult
 import com.blincke.commune_api.models.domain.events.egress.GetEventResult
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
 import com.blincke.commune_api.repositories.EventRepository

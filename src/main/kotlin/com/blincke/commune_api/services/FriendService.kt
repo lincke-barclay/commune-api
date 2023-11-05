@@ -47,7 +47,7 @@ class FriendService(
             getConfirmedFriends(requester, page, pageSize)
 
     fun initiateOrTransitionFriend(requester: User, recipientId: String): FriendRequestResult =
-            when (val result = userService.getUserById(recipientId)) {
+            when (userService.getUserById(recipientId)) {
                 is GetUserResult.Active -> FriendRequestResult.NothingToDo // TODO
                 is GetUserResult.DoesntExist -> FriendRequestResult.RecipientDoesntExist
             }
