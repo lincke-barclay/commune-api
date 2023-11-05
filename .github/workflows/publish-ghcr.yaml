@@ -14,6 +14,8 @@ jobs:
           java-version: '11'
           distribution: 'corretto'
           architecture: x64
+      - name: Build mvn package
+        run: mvn clean package
   publish_docker_container:
     needs: "build_and_test"
     runs-on: ubuntu-latest
