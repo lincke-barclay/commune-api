@@ -96,7 +96,7 @@
 			<artifactId>kotlinx-serialization-json</artifactId>
 			<version>${serialization.version}</version>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

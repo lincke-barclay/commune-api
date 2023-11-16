@@ -11,4 +11,5 @@ sealed interface FriendRequestResult {
     data object NothingToDo : FriendRequestResult
 
     data object RecipientDoesntExist : FriendRequestResult
+    data object RequestedToSameUser : FriendRequestResult
 }

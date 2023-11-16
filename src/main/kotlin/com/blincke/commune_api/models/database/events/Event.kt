@@ -10,35 +10,35 @@ import java.util.*
 @Entity
 @Table(name = "event")
 class Event(
-        @Id
-        @Column(name = "id")
-        val id: String = UUID.randomUUID().toString(),
+    @Id
+    @Column(name = "id")
+    val id: String = UUID.randomUUID().toString(),
 
-        @CreationTimestamp
-        @Column(name = "created_timestamp_utc", nullable = false, updatable = false)
-        val createdTs: Instant = Instant.now(),
+    @CreationTimestamp
+    @Column(name = "created_timestamp_utc", nullable = false, updatable = false)
+    val createdTs: Instant = Instant.now(),
 
-        @UpdateTimestamp
-        @Column(name = "last_updated_timestamp_utc", nullable = false)
-        val lastUpdatedTs: Instant = Instant.now(),
+    @UpdateTimestamp
+    @Column(name = "last_updated_timestamp_utc", nullable = false)
+    val lastUpdatedTs: Instant = Instant.now(),
 
-        @ManyToOne
-        @JoinColumn(name = "owner", referencedColumnName = "firebase_id")
-        val owner: User,
+    @ManyToOne
+    @JoinColumn(name = "firebase_owner_id", referencedColumnName = "firebase_id")
+    val owner: User,
 
-        @Column(name = "starting_datetime_utc", nullable = false)
-        val startDateTime: Instant,
+    @Column(name = "starting_timestamp_utc", nullable = false)
+    val startDateTime: Instant,
 
-        @Column(name = "ending_datetime_utc", nullable = false)
-        val endDateTime: Instant,
+    @Column(name = "ending_timestamp_utc", nullable = false)
+    val endDateTime: Instant,
 
-        @Column(name = "title", nullable = false)
-        val title: String,
+    @Column(name = "title", nullable = false)
+    val title: String,
 
-        @Column(name = "short_description", nullable = false)
-        val shortDescription: String,
+    @Column(name = "short_description", nullable = false)
+    val shortDescription: String,
 
-        @Column(name = "long_description", nullable = false)
-        val longDescription: String,
+    @Column(name = "long_description", nullable = false)
+    val longDescription: String,
 )
 

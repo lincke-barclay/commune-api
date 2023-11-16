@@ -1,5 +1,6 @@
 package com.blincke.commune_api.services
 
+import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
@@ -36,7 +37,10 @@ class EventService(
             requester: User,
             page: Int,
             pageSize: Int,
-    ) = eventRepository.findAllByOwnerNot(requester, Pageable.ofSize(pageSize).withPage(page))
+    ) = run {
+        AppLoggerFactory.getLogger(this).debug("Getting feed for user with id ${requester.firebaseId}")
+        eventRepository.findAllByOwnerNot(requester, Pageable.ofSize(pageSize).withPage(page))
+    }
 
     fun getMySuggestedEvents(
             requester: User,

@@ -13,7 +13,7 @@ data class Friendship(
 
         @Enumerated(EnumType.STRING)
         @Column(name = "status")
-        val status: Status,
+        var status: Status,
 
         @CreationTimestamp
         @Column(name = "created_timestamp_utc", nullable = false, updatable = false)

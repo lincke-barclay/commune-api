@@ -1,6 +1,7 @@
 package com.blincke.commune_api.controllers
 
 import com.blincke.commune_api.common.runAuthorizedOrElse
+import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.domain.users.egress.GetUserResult
 import com.blincke.commune_api.models.network.users.egress.toPrivateUserResponseDto
 import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
@@ -15,23 +16,25 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/")
 class UserController(
-        private val userService: UserService,
+    private val userService: UserService,
 ) {
     @GetMapping("/users/{userId}")
     fun getUser(
-            @PathVariable("userId") userId: String,
-            principal: JwtAuthenticationToken,
+        @PathVariable("userId") userId: String,
+        principal: JwtAuthenticationToken,
     ) = userService.runAuthorizedOrElse(
-            userId,
-            principal,
-            authorizedBody = { me ->
-                ResponseEntity.ok(me.toPrivateUserResponseDto())
-            },
-            unauthorizedBody = { _ ->
-                when (val notMeResult = userService.getUserById(userId)) {
-                    is GetUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
-                    is GetUserResult.DoesntExist -> ResponseEntity.notFound().build()
-                }
+        userId,
+        principal,
+        authorizedBody = { me ->
+            AppLoggerFactory.getLogger(this).debug("Request to get private user for user with id $userId")
+            ResponseEntity.ok(me.toPrivateUserResponseDto())
+        },
+        unauthorizedBody = { _ ->
+            AppLoggerFactory.getLogger(this).debug("Request to get public user for user with id $userId")
+            when (val notMeResult = userService.getUserById(userId)) {
+                is GetUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
+                is GetUserResult.DoesntExist -> ResponseEntity.notFound().build()
             }
+        }
     )
 }

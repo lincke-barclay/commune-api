@@ -1,5 +1,6 @@
 package com.blincke.commune_api.common
 
+import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.users.egress.FindAndSyncFirebaseUserResult
 import com.blincke.commune_api.models.firebase.FirebaseUser
@@ -34,21 +35,23 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  */
 
 fun runAuthorizedOrElse(
-        resourceOwnerId: String,
-        principal: User,
-        authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
-        unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
+    resourceOwnerId: String,
+    principal: User,
+    authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
+    unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
 ) = if (resourceOwnerId == principal.firebaseId) {
+    AppLoggerFactory.getLoggerByTag("Authorization").debug("Resolved authenticated user to ${principal.firebaseId}")
     authorizedBody(principal)
 } else {
+    AppLoggerFactory.getLoggerByTag("Authorization").debug("Resolved unauthenticated to ${principal.firebaseId}")
     unauthorizedBody(principal)
 }
 
 fun UserService.runAuthorizedOrElse(
-        resourceOwnerId: String,
-        principal: JwtAuthenticationToken,
-        authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
-        unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
+    resourceOwnerId: String,
+    principal: JwtAuthenticationToken,
+    authorizedBody: (authorizedUser: User) -> ResponseEntity<out Any?>,
+    unauthorizedBody: (unauthorizedUser: User) -> ResponseEntity<out Any?>,
 ) = when (val parseResult = jwtToFirebaseUser(principal)) {
     is ParseJWTResult.EmailNotVerified -> ResponseEntity.status(HttpStatus.FORBIDDEN).body("Email Not Verified")
     is ParseJWTResult.Success -> {
@@ -58,22 +61,22 @@ fun UserService.runAuthorizedOrElse(
     }
 
     is ParseJWTResult.JwtAttributeMissing -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            TokenMissingAttributesBody(missingAttributes = parseResult.missingAttributes), // TODO - probably don't expose this info
+        TokenMissingAttributesBody(missingAttributes = parseResult.missingAttributes), // TODO - probably don't expose this info
     )
 }
 
 fun UserService.runAuthorized(
-        resourceOwnerId: String,
-        principal: JwtAuthenticationToken,
-        body: (authorizedUser: User) -> ResponseEntity<out Any?>,
+    resourceOwnerId: String,
+    principal: JwtAuthenticationToken,
+    body: (authorizedUser: User) -> ResponseEntity<out Any?>,
 ) = runAuthorizedOrElse(resourceOwnerId, principal, authorizedBody = body) {
     ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 }
 
 fun runAuthorized(
-        resourceOwnerId: String,
-        requester: User,
-        body: (authorizedUser: User) -> ResponseEntity<out Any?>,
+    resourceOwnerId: String,
+    requester: User,
+    body: (authorizedUser: User) -> ResponseEntity<out Any?>,
 ) = runAuthorizedOrElse(resourceOwnerId, requester, body) {
     ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 }
@@ -86,8 +89,8 @@ fun runAuthorized(
 private
 
 fun UserService.transformToCommuneUserAndRun(
-        firebaseUser: FirebaseUser,
-        body: (user: User) -> ResponseEntity<out Any?>
+    firebaseUser: FirebaseUser,
+    body: (user: User) -> ResponseEntity<out Any?>
 ) = when (val userResult = findAndSyncDatabaseWithActiveFirebaseUser(firebaseUser)) {
     is FindAndSyncFirebaseUserResult.UserExistsAndIsUpToDate -> body(userResult.user)
     is FindAndSyncFirebaseUserResult.UserExistsAndWasUpdated -> body(userResult.user)
@@ -101,8 +104,9 @@ private sealed interface ParseJWTResult {
 }
 
 private fun jwtToFirebaseUser(
-        principal: JwtAuthenticationToken,
+    principal: JwtAuthenticationToken,
 ): ParseJWTResult {
+    AppLoggerFactory.getLoggerByTag("JWT Parse").debug("Starting to parse token")
     val jwtAttributes = principal.tokenAttributes
 
     val missingAttributes = mutableListOf<String>()
@@ -125,6 +129,10 @@ private fun jwtToFirebaseUser(
     }
 
     if (missingAttributes.size > 0) {
+        AppLoggerFactory.getLoggerByTag("JWT Parse").debug(
+            "Token with attributes: " +
+                    " $jwtAttributes missing attributes: $missingAttributes"
+        )
         return ParseJWTResult.JwtAttributeMissing(missingAttributes = missingAttributes)
     }
 
@@ -132,16 +140,17 @@ private fun jwtToFirebaseUser(
         return ParseJWTResult.EmailNotVerified
     }
 
+    AppLoggerFactory.getLoggerByTag("JWT Parse").debug("Parsed token for user with id: $uid")
     return ParseJWTResult.Success(
-            FirebaseUser(
-                    uid = uid!!,
-                    name = name!!,
-                    email = email!!,
-            )
+        FirebaseUser(
+            uid = uid!!,
+            name = name!!,
+            email = email!!,
+        )
     )
 }
 
 private data class TokenMissingAttributesBody(
-        val message: String = "Invalid JWT",
-        val missingAttributes: List<String>,
+    val message: String = "Invalid JWT",
+    val missingAttributes: List<String>,
 )
