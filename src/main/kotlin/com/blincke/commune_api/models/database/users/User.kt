@@ -18,13 +18,15 @@ class User(
     @Column(name = "email")
     val email: String,
 
+    @Column(name = "profile_picture_url")
+    val profilePictureUrl: String? = null,
+
     @OneToMany(mappedBy = "friendshipId.requester", cascade = [CascadeType.ALL], orphanRemoval = true)
     val friendRequestsISent: MutableSet<Friendship>,
 
     @OneToMany(mappedBy = "friendshipId.recipient", cascade = [CascadeType.ALL], orphanRemoval = true)
     val friendRequestsSentToMe: MutableSet<Friendship>
 ) {
-
     // TODO - I think queries would be faster - but that'd be a premature optimization
     // TODO Experiment
     val usersWhoSentAFriendRequestToMeThatIsPending
@@ -58,11 +60,13 @@ class User(
         email: String? = null,
         requestedFriends: MutableSet<Friendship>? = null,
         recipientToFriendRequests: MutableSet<Friendship>? = null,
+        profilePictureUrl: String? = null,
     ) = User(
         firebaseId = firebaseId ?: this.firebaseId,
         name = name ?: this.name,
         email = email ?: this.email,
         friendRequestsISent = requestedFriends ?: this.friendRequestsISent,
         friendRequestsSentToMe = recipientToFriendRequests ?: this.friendRequestsSentToMe,
+        profilePictureUrl = profilePictureUrl ?: this.profilePictureUrl,
     )
 }

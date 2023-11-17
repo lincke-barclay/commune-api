@@ -4,7 +4,7 @@ import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.users.egress.FindAndSyncFirebaseUserResult
 import com.blincke.commune_api.models.firebase.FirebaseUser
-import com.blincke.commune_api.services.UserService
+import com.blincke.commune_api.services.models.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken

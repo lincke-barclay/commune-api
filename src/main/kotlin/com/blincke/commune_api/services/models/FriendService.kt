@@ -1,4 +1,4 @@
-package com.blincke.commune_api.services
+package com.blincke.commune_api.services.models
 
 import com.blincke.commune_api.models.database.friends.Friendship
 import com.blincke.commune_api.models.database.friends.FriendshipId

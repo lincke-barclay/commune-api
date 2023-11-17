@@ -6,8 +6,8 @@ import com.blincke.commune_api.models.domain.events.egress.GetEventResult
 import com.blincke.commune_api.models.network.events.egress.toMinimalPublicEventListDto
 import com.blincke.commune_api.models.network.events.egress.toPrivateEventResponseDto
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
-import com.blincke.commune_api.services.EventService
-import com.blincke.commune_api.services.UserService
+import com.blincke.commune_api.services.models.EventService
+import com.blincke.commune_api.services.models.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.*

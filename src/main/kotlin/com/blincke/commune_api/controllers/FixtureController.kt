@@ -9,7 +9,7 @@ import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.repositories.EventRepository
 import com.blincke.commune_api.repositories.FriendshipRepository
 import com.blincke.commune_api.repositories.UserRepository
-import com.blincke.commune_api.services.UserService
+import com.blincke.commune_api.services.models.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.DeleteMapping

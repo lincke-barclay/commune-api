@@ -5,15 +5,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PrivateUserResponseDto(
-        val id: String,
-        val name: String,
-        val email: String,
+    val id: String,
+    val name: String,
+    val email: String,
+    val profilePictureUrl: String?,
 )
 
 fun User.toPrivateUserResponseDto() =
-        PrivateUserResponseDto(
-                id = firebaseId,
-                name = name,
-                email = email,
-        )
+    PrivateUserResponseDto(
+        id = firebaseId,
+        name = name,
+        email = email,
+        profilePictureUrl = profilePictureUrl,
+    )
 

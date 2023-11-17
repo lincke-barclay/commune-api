@@ -6,8 +6,8 @@ import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.domain.friends.egress.DeleteFriendRequestResult
 import com.blincke.commune_api.models.domain.friends.egress.FriendRequestResult
 import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
-import com.blincke.commune_api.services.FriendService
-import com.blincke.commune_api.services.UserService
+import com.blincke.commune_api.services.models.FriendService
+import com.blincke.commune_api.services.models.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken

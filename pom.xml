@@ -96,6 +96,11 @@
 			<artifactId>kotlinx-serialization-json</artifactId>
 			<version>${serialization.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.12.590</version>
+		</dependency>
 	</dependencies>
 
 	<build>
