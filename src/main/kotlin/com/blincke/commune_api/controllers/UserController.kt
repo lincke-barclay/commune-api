@@ -1,66 +1,54 @@
 package com.blincke.commune_api.controllers
 
-import com.blincke.commune_api.controllers.dto.UserRequestDto
-import com.blincke.commune_api.controllers.dto.UserResponse
-import com.blincke.commune_api.controllers.dto.UserResponseDto
-import com.blincke.commune_api.exceptions.UserNotFoundException
-import com.blincke.commune_api.services.UserService
-import org.slf4j.LoggerFactory
-import org.springframework.data.geo.Point
-import org.springframework.http.HttpStatus
+import com.blincke.commune_api.common.runAuthorized
+import com.blincke.commune_api.common.runAuthorizedOrElse
+import com.blincke.commune_api.logging.AppLoggerFactory
+import com.blincke.commune_api.models.domain.users.egress.GetUserResult
+import com.blincke.commune_api.models.network.users.egress.toPrivateUserResponseDto
+import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseDto
+import com.blincke.commune_api.services.images.ProfilePictureService
+import com.blincke.commune_api.services.models.UserService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import java.lang.Exception
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users/{userId}")
 class UserController(
     private val userService: UserService,
+    private val profilePictureService: ProfilePictureService,
 ) {
-    private val log = LoggerFactory.getLogger(this.javaClass)
-
-    @PostMapping
-    fun createUser(
-        @RequestBody userRequestDto: UserRequestDto,
-    ): ResponseEntity<UserResponseDto> {
-        return try {
-            ResponseEntity.ok(
-                UserResponse(
-                    with(userRequestDto) {
-                        userService.createUser(
-                            email = email,
-                            firstName = firstName,
-                            lastName = lastName,
-                            homePoint = Point(locationLat, locationLon),
-                        )
-                    }
-                )
-            )
-        } catch (e: Exception) {
-            log.warn("Could not create new user with error", e)
-            ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-    }
-
-    @GetMapping
-    fun getUserByEmail(
-        @RequestParam userEmail: String,
-    ): ResponseEntity<UserResponseDto> {
-        return try {
-            ResponseEntity.ok(
-                UserResponse(userService.getUserByEmail(userEmail = userEmail))
-            )
-        } catch (e: Exception) {
-            log.warn("Could not get new user with error", e)
-            return when (e) {
-                is UserNotFoundException -> ResponseEntity(HttpStatus.NOT_FOUND)
-                else -> ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
+    @GetMapping("")
+    fun getUser(
+        @PathVariable("userId") userId: String,
+        principal: JwtAuthenticationToken,
+    ) = userService.runAuthorizedOrElse(
+        userId,
+        principal,
+        authorizedBody = { me ->
+            AppLoggerFactory.getLogger(this).debug("Request to get private user for user with id $userId")
+            ResponseEntity.ok(me.toPrivateUserResponseDto())
+        },
+        unauthorizedBody = { _ ->
+            AppLoggerFactory.getLogger(this).debug("Request to get public user for user with id $userId")
+            when (val notMeResult = userService.getUserById(userId)) {
+                is GetUserResult.Active -> ResponseEntity.ok(notMeResult.user.toPublicUserResponseDto())
+                is GetUserResult.DoesntExist -> ResponseEntity.notFound().build()
             }
+        }
+    )
+
+    @PostMapping("/profile-picture")
+    fun uploadProfilePicture(
+        @RequestPart(value = "file") file: MultipartFile,
+        @PathVariable("userId") userId: String,
+        principal: JwtAuthenticationToken,
+    ): ResponseEntity<out Any> {
+        return userService.runAuthorized(userId, principal) { user ->
+            val url = this.profilePictureService.saveProfilePhotoFor(file, user)
+            userService.updateProfilePictureUrl(user, url)
+            ResponseEntity.created(url.toURI()).build()
         }
     }
 }
