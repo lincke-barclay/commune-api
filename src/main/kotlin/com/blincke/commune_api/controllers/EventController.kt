@@ -22,12 +22,11 @@ class EventController(
     fun getMyEvents(
         principal: JwtAuthenticationToken,
         @PathVariable("userId") userId: String,
-        @RequestParam("page", required = true) page: Int,
+        @RequestParam("lastEventId", required = false) lastEventId: String?,
         @RequestParam("pageSize", required = true) pageSize: Int,
-        @RequestParam("queryStr", required = true) queryStr: String,
     ) = userService.runAuthorized(userId, principal) { requestingUser ->
         // TODO - integrate query String
-        ResponseEntity.ok(eventService.getEventsOfUser(requestingUser, page, pageSize)
+        ResponseEntity.ok(eventService.getEventsOfUser(requestingUser, lastEventId, pageSize)
             .map { event -> event.toPrivateEventResponseDto() })
     }
 
@@ -46,12 +45,12 @@ class EventController(
     fun getMyFeed(
         principal: JwtAuthenticationToken,
         @PathVariable("userId") userId: String,
-        @RequestParam("page", required = true) page: Int,
+        @RequestParam("lastEventId", required = false) lastEventId: String?,
         @RequestParam("pageSize", required = true) pageSize: Int,
     ) = userService.runAuthorized(userId, principal) { requestingUser ->
         AppLoggerFactory.getLogger(this).debug("Request to get feed from user with id: ${requestingUser.firebaseId}")
         ResponseEntity.ok(
-            eventService.getMyFeed(requestingUser, page, pageSize)
+            eventService.getMyFeed(requestingUser, lastEventId, pageSize)
                 .toMinimalPublicEventListDto()
         )
     }
@@ -60,14 +59,14 @@ class EventController(
     fun getMySuggestedEvents(
         principal: JwtAuthenticationToken,
         @PathVariable("userId") userId: String,
-        @RequestParam("page", required = true) page: Int,
+        @RequestParam("lastEventId", required = false) lastEventId: String?,
         @RequestParam("pageSize", required = true) pageSize: Int,
     ) = run {
         AppLoggerFactory.getLogger(this).debug("Request to get suggested events for user $userId")
         userService.runAuthorized(userId, principal) { requestingUser ->
             AppLoggerFactory.getLogger(this).debug("Getting suggested events for authenticated user: $userId")
             ResponseEntity.ok(
-                eventService.getMySuggestedEvents(requestingUser, page, pageSize)
+                eventService.getMySuggestedEvents(requestingUser, lastEventId, pageSize)
                     .toMinimalPublicEventListDto()
             )
         }
