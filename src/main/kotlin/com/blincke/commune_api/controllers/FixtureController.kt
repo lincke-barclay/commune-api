@@ -28,7 +28,6 @@ class FixtureController(
     private val userRepository: UserRepository,
     private val userService: UserService,
 ) {
-
     @PostMapping("/randomData")
     fun seedEvents(
         principal: JwtAuthenticationToken,
@@ -41,7 +40,8 @@ class FixtureController(
                     name = generateRandomName(),
                     email = generateRandomEmail(),
                     friendRequestsISent = mutableSetOf(),
-                    friendRequestsSentToMe = mutableSetOf()
+                    friendRequestsSentToMe = mutableSetOf(),
+                    profilePictureUrl = "https://picsum.photos/200",
                 )
             )
         }
@@ -152,7 +152,7 @@ class FixtureController(
         eventRepository.deleteAllById((0..50).map {
             "Fixture|MyEvent|$it"
         })
-        eventRepository.deleteAllById((0..100).map {
+        eventRepository.deleteAllById((0..200).map {
             "Fixture|$it"
         })
         userRepository.deleteAllById((0..100).map {
