@@ -5,9 +5,13 @@ import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.models.domain.events.egress.CreateEventResult
 import com.blincke.commune_api.models.domain.events.egress.GetEventResult
+import com.blincke.commune_api.models.network.SortDirection
 import com.blincke.commune_api.models.network.events.ingress.POSTEventRequestDTO
+import com.blincke.commune_api.models.network.events.ingress.PublicEventSortBy
 import com.blincke.commune_api.repositories.EventRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -17,10 +21,52 @@ class EventService(
     private val eventRepository: EventRepository,
 ) {
     fun getEventsOfUser(
-        requester: User,
-        lastEventId: String?,
-        pageSize: Int,
-    ) = eventRepository.findAllByOwner(requester, Pageable.ofSize(pageSize))
+        startDateTimeMin: Instant,
+        startDateTimeMax: Instant,
+        endDateTimeMin: Instant,
+        endDateTimeMax: Instant,
+        titleContainingIgnoreCase: String,
+        owner: User,
+        sortBy: PublicEventSortBy,
+        sortDirection: SortDirection,
+        limit: Int,
+    ): List<Event> {
+        val pageable = PageRequest.of(0, limit, Sort.by(sortDirection.sortBy, sortBy.column))
+
+        return eventRepository.findAllByStartDateTimeGreaterThanAndStartDateTimeLessThanAndEndDateTimeGreaterThanAndEndDateTimeLessThanAndTitleContainingIgnoreCaseAndOwnerIs(
+            startDateTimeMin = startDateTimeMin,
+            startDateTimeMax = startDateTimeMax,
+            endDateTimeMin = endDateTimeMin,
+            endDateTimeMax = endDateTimeMax,
+            titleContainingIgnoreCase = titleContainingIgnoreCase,
+            owner = owner,
+            pageable = pageable,
+        )
+    }
+
+    fun getEvents(
+        startDateTimeMin: Instant,
+        startDateTimeMax: Instant,
+        endDateTimeMin: Instant,
+        endDateTimeMax: Instant,
+        titleContainingIgnoreCase: String,
+        requester: User, // TODO
+        sortBy: PublicEventSortBy,
+        sortDirection: SortDirection,
+        limit: Int,
+    ): List<Event> {
+        val pageable = PageRequest.of(0, limit, Sort.by(sortDirection.sortBy, sortBy.column))
+
+        return eventRepository.findAllByStartDateTimeGreaterThanEqualAndStartDateTimeLessThanEqualAndEndDateTimeGreaterThanEqualAndEndDateTimeLessThanEqualAndTitleContainingIgnoreCaseAndOwnerNot(
+            startDateTimeMin = startDateTimeMin,
+            startDateTimeMax = startDateTimeMax,
+            endDateTimeMin = endDateTimeMin,
+            endDateTimeMax = endDateTimeMax,
+            ownerNot = requester,
+            titleContainingIgnoreCase = titleContainingIgnoreCase,
+            pageable = pageable,
+        )
+    }
 
     fun getEventById(
         eventId: String,

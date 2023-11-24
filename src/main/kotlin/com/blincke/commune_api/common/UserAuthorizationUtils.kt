@@ -81,14 +81,28 @@ fun runAuthorized(
     ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 }
 
+fun UserService.runAuthenticated(
+    principal: JwtAuthenticationToken,
+    body: (authorizedUser: User) -> ResponseEntity<out Any?>,
+) = when (val parseResult = jwtToFirebaseUser(principal)) {
+    is ParseJWTResult.EmailNotVerified -> ResponseEntity.status(HttpStatus.FORBIDDEN).body("Email Not Verified")
+    is ParseJWTResult.Success -> {
+        transformToCommuneUserAndRun(parseResult.firebaseUser) {
+            body(it)
+        }
+    }
+
+    is ParseJWTResult.JwtAttributeMissing -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+        TokenMissingAttributesBody(missingAttributes = parseResult.missingAttributes), // TODO - probably don't expose this info
+    )
+}
+
 /**
  * This function is ugly, but it's private so who cares
  * maybe change in the future to be just a generic transform, but
  * it just simplifies the calling code a bit for now - TODO - think about this more
  */
-private
-
-fun UserService.transformToCommuneUserAndRun(
+private fun UserService.transformToCommuneUserAndRun(
     firebaseUser: FirebaseUser,
     body: (user: User) -> ResponseEntity<out Any?>
 ) = when (val userResult = findAndSyncDatabaseWithActiveFirebaseUser(firebaseUser)) {

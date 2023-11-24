@@ -14,4 +14,38 @@ interface EventRepository : JpaRepository<Event, String> {
         startDateTime: Instant,
         pageable: Pageable
     ): List<Event>
+
+    /**
+     * startDt \in [[startDateTimeMin], [startDateTimeMax]]
+     * endDt \in [[endDateTimeMin], [endDateTimeMax]]
+     * title containing ignore case [titleContainingIgnoreCase]
+     * owner is [owner]
+     * ORDER BY LIMIT [pageable]
+     */
+    fun findAllByStartDateTimeGreaterThanAndStartDateTimeLessThanAndEndDateTimeGreaterThanAndEndDateTimeLessThanAndTitleContainingIgnoreCaseAndOwnerIs(
+        startDateTimeMin: Instant,
+        startDateTimeMax: Instant,
+        endDateTimeMin: Instant,
+        endDateTimeMax: Instant,
+        titleContainingIgnoreCase: String,
+        owner: User,
+        pageable: Pageable,
+    ): List<Event>
+
+    /**
+     * startDt \in [[startDateTimeMin], [startDateTimeMax]]
+     * endDt \in [[endDateTimeMin], [endDateTimeMax]]
+     * title containing ignore case [titleContainingIgnoreCase]
+     * owner NOT [ownerNot]
+     * ORDER BY LIMIT [pageable]
+     */
+    fun findAllByStartDateTimeGreaterThanEqualAndStartDateTimeLessThanEqualAndEndDateTimeGreaterThanEqualAndEndDateTimeLessThanEqualAndTitleContainingIgnoreCaseAndOwnerNot(
+        startDateTimeMin: Instant,
+        startDateTimeMax: Instant,
+        endDateTimeMin: Instant,
+        endDateTimeMax: Instant,
+        titleContainingIgnoreCase: String,
+        ownerNot: User,
+        pageable: Pageable,
+    ): List<Event>
 }
