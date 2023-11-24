@@ -20,7 +20,7 @@ class Event(
 
     @UpdateTimestamp
     @Column(name = "last_updated_timestamp_utc", nullable = false)
-    val lastUpdatedTs: Instant = Instant.now(),
+    var lastUpdatedTs: Instant = Instant.now(),
 
     @ManyToOne
     @JoinColumn(name = "firebase_owner_id", referencedColumnName = "firebase_id")

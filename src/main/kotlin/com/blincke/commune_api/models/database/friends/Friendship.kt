@@ -21,5 +21,5 @@ data class Friendship(
 
         @UpdateTimestamp
         @Column(name = "last_updated_timestamp_utc", nullable = false, updatable = false)
-        val lastUpdatedTS: Instant = Instant.now(),
+        var lastUpdatedTS: Instant = Instant.now(),
 )
