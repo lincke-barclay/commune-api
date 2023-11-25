@@ -83,7 +83,7 @@ class FriendsController(
         )
         userService.runAuthorized(userId, principal) {
             AppLoggerFactory.getLogger(this).debug("From user with id ${it.firebaseId}")
-            ResponseEntity.ok(friendService.getSuggestedFriendsForUser(it, page, pageSize)
+            ResponseEntity.ok(friendService.getSuggestedFriendsForUser(it, queryStr, page, pageSize)
                 .map { friend -> friend.toPublicUserResponseDto() })
         }
     }
