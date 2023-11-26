@@ -98,12 +98,6 @@ class EventService(
         )
     }
 
-    fun getMySuggestedEvents(
-        requester: User,
-        lastEventId: String?,
-        pageSize: Int,
-    ) = getMyFeed(requester, lastEventId, pageSize) // TODO - algorithm
-
     fun deleteEvent(
         event: Event,
     ) = eventRepository.delete(event)

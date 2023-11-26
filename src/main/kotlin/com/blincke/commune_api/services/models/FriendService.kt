@@ -39,13 +39,6 @@ class FriendService(
             Pageable.ofSize(pageSize).withPage(page)
         )
 
-    fun getSuggestedFriendsForUser(requester: User, queryString: String, page: Int, pageSize: Int) =
-        userRepository.selectSuggestedFriends(
-            requester,
-            queryString.lowercase(),
-            Pageable.ofSize(pageSize).withPage(page)
-        )
-
     @Transactional
     fun initiateOrTransitionFriend(requester: User, recipientId: String): FriendRequestResult {
         if (requester.firebaseId == recipientId) {

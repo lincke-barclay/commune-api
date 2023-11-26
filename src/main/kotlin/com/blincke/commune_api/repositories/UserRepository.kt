@@ -7,18 +7,13 @@ import org.springframework.data.jpa.repository.Query
 
 interface UserRepository : JpaRepository<User, String> {
 
+    // TODO - algorithm
     @Query(
         value = "select u from User u " +
-                "where u not in " +
-                "(select f.friendshipId.requester from Friendship f " +
-                "where f.friendshipId.recipient = (?1))" +
-                "and u not in " +
-                "(select f.friendshipId.recipient from Friendship f " +
-                "where f.friendshipId.requester = (?1))" +
-                "and u != (?1) " +
+                "where u != (?1) " +
                 "and lower(u.name) like %?2%"
     )
-    fun selectSuggestedFriends(
+    fun getUsersByQuery(
         user: User,
         nameContainsLower: String,
         pageable: Pageable,

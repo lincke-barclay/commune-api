@@ -68,26 +68,6 @@ class FriendsController(
             .map { friend -> friend.toPublicUserResponseDto() })
     }
 
-    @GetMapping("/suggested")
-    fun getSuggestedFriendsForMe(
-        principal: JwtAuthenticationToken,
-        @PathVariable("userId") userId: String,
-        @RequestParam("page", required = true) page: Int,
-        @RequestParam("pageSize", required = true) pageSize: Int,
-        @RequestParam("queryStr", required = true) queryStr: String,
-    ) = run {
-        // TODO - integrate query String
-        AppLoggerFactory.getLogger(this).debug(
-            "Request to get suggested friends for user $userId, pageSize = $pageSize, " +
-                    "page = $page, queryStr = $queryStr"
-        )
-        userService.runAuthorized(userId, principal) {
-            AppLoggerFactory.getLogger(this).debug("From user with id ${it.firebaseId}")
-            ResponseEntity.ok(friendService.getSuggestedFriendsForUser(it, queryStr, page, pageSize)
-                .map { friend -> friend.toPublicUserResponseDto() })
-        }
-    }
-
     @PostMapping("/{recipientId}")
     fun transitionOrInitiateFriendship(
         principal: JwtAuthenticationToken,
