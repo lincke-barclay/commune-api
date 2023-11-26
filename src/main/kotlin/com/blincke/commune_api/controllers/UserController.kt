@@ -1,5 +1,6 @@
 package com.blincke.commune_api.controllers
 
+import com.blincke.commune_api.common.runAuthenticated
 import com.blincke.commune_api.common.runAuthorized
 import com.blincke.commune_api.common.runAuthorizedOrElse
 import com.blincke.commune_api.logging.AppLoggerFactory
@@ -14,12 +15,13 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/users/{userId}")
 class UserController(
     private val userService: UserService,
     private val profilePictureService: ProfilePictureService,
 ) {
-    @GetMapping("")
+    private val logger = AppLoggerFactory.getLogger(this)
+
+    @GetMapping("/users/{userId}")
     fun getUser(
         @PathVariable("userId") userId: String,
         principal: JwtAuthenticationToken,
@@ -39,7 +41,7 @@ class UserController(
         }
     )
 
-    @PostMapping("/profile-picture")
+    @PostMapping("/users/{userId}/profile-picture")
     fun uploadProfilePicture(
         @RequestPart(value = "file") file: MultipartFile,
         @PathVariable("userId") userId: String,
@@ -49,6 +51,27 @@ class UserController(
             val url = this.profilePictureService.saveProfilePhotoFor(file, user)
             userService.updateProfilePictureUrl(user, url)
             ResponseEntity.created(url.toURI()).build()
+        }
+    }
+
+    @GetMapping("/users")
+    fun getPublicUsersByQuery(
+        principal: JwtAuthenticationToken,
+        @RequestParam("page", required = true) page: Int,
+        @RequestParam("pageSize", required = true) pageSize: Int,
+        @RequestParam("queryStr", required = true) queryStr: String,
+    ): ResponseEntity<out Any> {
+        logger.debug("Request to get users with query: $queryStr")
+        return userService.runAuthenticated(principal) { requester ->
+            logger.debug("From user with id: ${requester.firebaseId}")
+            ResponseEntity.ok(
+                userService.getUsersByQuery(
+                    requester,
+                    queryStr,
+                    page,
+                    pageSize,
+                ).map { it.toPublicUserResponseDto() }
+            )
         }
     }
 }

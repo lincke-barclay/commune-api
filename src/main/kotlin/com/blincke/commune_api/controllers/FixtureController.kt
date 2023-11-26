@@ -4,7 +4,6 @@ import com.blincke.commune_api.common.*
 import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.friends.Friendship
 import com.blincke.commune_api.models.database.friends.FriendshipId
-import com.blincke.commune_api.models.database.friends.Status
 import com.blincke.commune_api.models.database.users.User
 import com.blincke.commune_api.repositories.EventRepository
 import com.blincke.commune_api.repositories.FriendshipRepository
@@ -39,8 +38,6 @@ class FixtureController(
                     firebaseId = "Fixture|$it",
                     name = generateRandomName(),
                     email = generateRandomEmail(),
-                    friendRequestsISent = mutableSetOf(),
-                    friendRequestsSentToMe = mutableSetOf(),
                     profilePictureUrl = "https://picsum.photos/200",
                 )
             )
@@ -105,15 +102,6 @@ class FixtureController(
                             requester = user1,
                             recipient = user2,
                         ),
-                        status = when (Random.nextInt(2)) {
-                            0 -> {
-                                Status.PENDING
-                            }
-
-                            else -> {
-                                Status.ACCEPTED
-                            }
-                        }
                     )
                 )
             }
@@ -129,15 +117,6 @@ class FixtureController(
                         requester = user1,
                         recipient = user2,
                     ),
-                    status = when (Random.nextInt(2)) {
-                        0 -> {
-                            Status.PENDING
-                        }
-
-                        else -> {
-                            Status.ACCEPTED
-                        }
-                    }
                 )
             )
         }
