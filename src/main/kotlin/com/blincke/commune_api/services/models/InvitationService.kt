@@ -22,18 +22,28 @@ class InvitationService(
     private val userService: UserService,
 ) {
 
-    fun createNewInvitationForUserAndEventByIds(sender: User, recipientId: String, eventId:String, expirationTimestamp: Instant): CreateInvitationResult  {
-        val recipient = when(val result = userService.getUserById(id = recipientId)) {
+    fun createNewInvitationForUserAndEventByIds(
+        sender: User,
+        recipientId: String,
+        eventId: String,
+        expirationTimestamp: Instant?,
+    ): CreateInvitationResult {
+        val recipient = when (val result = userService.getUserById(id = recipientId)) {
             is GetUserResult.Active -> result.user
             GetUserResult.DoesntExist -> return CreateInvitationResult.NoRecipient
         }
 
-        val event = when(val result = eventService.getEventById(id = eventId)) {
+        val event = when (val result = eventService.getEventById(id = eventId)) {
             is GetEventResult.Exists -> result.event
             GetEventResult.DoesntExist -> return CreateInvitationResult.NoEvent
         }
 
-        val invitation = createNewInvitation(event = event, sender = sender, recipient = recipient)
+        val invitation = createNewInvitation(
+            event = event,
+            sender = sender,
+            recipient = recipient,
+            expirationTimestamp = expirationTimestamp,
+        )
 
         return CreateInvitationResult.Created(invitation = invitation)
     }
@@ -42,10 +52,17 @@ class InvitationService(
         event: Event,
         sender: User,
         recipient: User,
+        expirationTimestamp: Instant? = null,
         status: Status = Status.PENDING,
     ): Invitation {
         return invitationRepository.save(
-            Invitation(event = event, recipient = recipient, sender = sender, status = status)
+            Invitation(
+                event = event,
+                recipient = recipient,
+                sender = sender,
+                status = status,
+                expirationTimestamp = expirationTimestamp,
+            )
         )
     }
 
