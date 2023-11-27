@@ -69,8 +69,8 @@ class EventService(
     }
 
     fun getEventById(
-        eventId: String,
-    ) = eventRepository.findByIdOrNull(eventId)?.let {
+        id: String,
+    ) = eventRepository.findByIdOrNull(id)?.let {
         GetEventResult.Exists(event = it)
     } ?: GetEventResult.DoesntExist
 
