@@ -63,15 +63,15 @@ class UserController(
     ): ResponseEntity<out Any> {
         logger.debug("Request to get users with query: $queryStr")
         return userService.runAuthenticated(principal) { requester ->
-            logger.debug("From user with id: ${requester.firebaseId}")
-            ResponseEntity.ok(
-                userService.getUsersByQuery(
-                    requester,
-                    queryStr,
-                    page,
-                    pageSize,
-                ).map { it.toPublicUserResponseDto() }
-            )
+            logger.debug("From user with id: ${requester.firebaseId}. Paging: $page $pageSize")
+            val resp = userService.getUsersByQuery(
+                requester,
+                queryStr,
+                page,
+                pageSize,
+            ).map { it.toPublicUserResponseDto() }
+            logger.debug("Users: $resp")
+            ResponseEntity.ok(resp)
         }
     }
 }
