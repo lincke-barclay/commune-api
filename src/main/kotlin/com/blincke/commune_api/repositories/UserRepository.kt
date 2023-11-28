@@ -8,13 +8,8 @@ import org.springframework.data.jpa.repository.Query
 interface UserRepository : JpaRepository<User, String> {
 
     // TODO - algorithm
-    @Query(
-        value = "select u from User u " +
-                "where u != (?1) " +
-                "and lower(u.name) like %?2%"
-    )
-    fun getUsersByQuery(
-        user: User,
+    fun getAllByFirebaseIdNotAndNameContainingIgnoreCase(
+        id: String,
         nameContainsLower: String,
         pageable: Pageable,
     ): List<User>

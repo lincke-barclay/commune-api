@@ -45,8 +45,8 @@ class UserService(
     }
 
     fun getUsersByQuery(requester: User, queryString: String, page: Int, pageSize: Int) =
-        userRepository.getUsersByQuery(
-            requester,
+        userRepository.getAllByFirebaseIdNotAndNameContainingIgnoreCase(
+            requester.firebaseId,
             queryString.lowercase(),
             Pageable.ofSize(pageSize).withPage(page)
         )
