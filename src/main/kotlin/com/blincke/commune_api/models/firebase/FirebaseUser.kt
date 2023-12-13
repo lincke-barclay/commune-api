@@ -17,8 +17,6 @@ data class FirebaseUser(
             firebaseId = uid,
             name = name,
             email = email,
-            friendRequestsISent = mutableSetOf(),
-            friendRequestsSentToMe = mutableSetOf(),
     )
 
     /**

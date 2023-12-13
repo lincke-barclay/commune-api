@@ -2,8 +2,8 @@ package com.blincke.commune_api.services.models
 
 import com.blincke.commune_api.models.database.friends.Friendship
 import com.blincke.commune_api.models.database.friends.FriendshipId
-import com.blincke.commune_api.models.database.friends.Status
 import com.blincke.commune_api.models.database.users.User
+import com.blincke.commune_api.models.domain.friends.FriendshipState
 import com.blincke.commune_api.models.domain.friends.egress.DeleteFriendRequestResult
 import com.blincke.commune_api.models.domain.friends.egress.FriendRequestResult
 import com.blincke.commune_api.models.domain.users.egress.GetUserResult
@@ -12,6 +12,7 @@ import com.blincke.commune_api.repositories.UserRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FriendService(
@@ -38,9 +39,7 @@ class FriendService(
             Pageable.ofSize(pageSize).withPage(page)
         )
 
-    fun getSuggestedFriendsForUser(requester: User, page: Int, pageSize: Int) =
-        userRepository.selectSuggestedFriends(requester, Pageable.ofSize(pageSize).withPage(page))
-
+    @Transactional
     fun initiateOrTransitionFriend(requester: User, recipientId: String): FriendRequestResult {
         if (requester.firebaseId == recipientId) {
             return FriendRequestResult.RequestedToSameUser
@@ -48,74 +47,60 @@ class FriendService(
 
         return when (val result = userService.getUserById(recipientId)) {
             is GetUserResult.Active -> {
-                when (result.user) {
-                    in requester.activeFriends,
-                    in requester.usersWhoISentAFriendRequestToThatIsPending -> {
-                        FriendRequestResult.NothingToDo
-                    }
-
-                    in requester.usersWhoSentAFriendRequestToMeThatIsPending -> {
-                        transitionPendingFriendship(result.user, requester)
-                        FriendRequestResult.Accepted
-                    }
-
-                    else -> {
-                        createNewFriendRequest(requester, result.user)
-                        FriendRequestResult.Created
-                    }
-                }
+                createFriendship(requester, result.user)
             }
 
             is GetUserResult.DoesntExist -> FriendRequestResult.RecipientDoesntExist
         }
     }
 
+    fun getFriendshipState(
+        user1: User,
+        user2: User,
+    ): FriendshipState {
+        val relevantFriendships = friendshipRepository.selectRelevantFriendships(user1, user2)
 
-    private fun createNewFriendRequest(requester: User, recipient: User) {
+        if (relevantFriendships.size > 2) {
+            throw Exception("Relevant friendships is greater than 2 - this is a bug")
+        }
+
+        return FriendshipState(
+            user1 = user1,
+            user1Initiated = user1 in relevantFriendships.map { it.friendshipId.requester },
+            user2 = user2,
+            user2Initiated = user2 in relevantFriendships.map { it.friendshipId.requester }
+        )
+    }
+
+    @Transactional
+    fun createFriendship(
+        requester: User,
+        recipient: User
+    ): FriendRequestResult {
         assert(requester.firebaseId != recipient.firebaseId) {
             "Tried to transition friendship for same user with id " +
                     "${recipient.firebaseId}. This logic should be accounted for above"
         }
-
+        val state = getFriendshipState(
+            user1 = requester,
+            user2 = recipient,
+        )
         val friendship = Friendship(
             friendshipId = FriendshipId(
                 requester = requester,
                 recipient = recipient
             ),
-            status = Status.PENDING,
         )
-
-        friendshipRepository.save(friendship)
-    }
-
-    private fun transitionPendingFriendship(user1: User, user2: User) {
-        assert(user1.firebaseId != user2.firebaseId) { "Cannot transition a friendship for the same user with id: ${user1.firebaseId}" }
-
-        // case 1: user1 is the requester
-        val case1 = user1.friendRequestsISent
-            .filter { it.friendshipId.recipient.firebaseId == user2.firebaseId }
-
-        // case 2: user2 is the requester
-        val case2 = user2.friendRequestsISent
-            .filter { it.friendshipId.recipient.firebaseId == user2.firebaseId }
-
-        val filtered = case1 + case2
-
-        assert(filtered.size == 1) {
-            "Trying to transition friendship for user ${user1.firebaseId} and ${user2.firebaseId} but for some reason" +
-                    "there are multiple friend requests that exist from this user - this should not be the case because request + recipient is " +
-                    "a unique compound key - and this is definitely a bug"
+        return if (state.user1Initiated) {
+            FriendRequestResult.NothingToDo
+        } else if (state.user2Initiated) {
+            // user1Initiated is false
+            friendshipRepository.save(friendship)
+            FriendRequestResult.Accepted
+        } else {
+            friendshipRepository.save(friendship)
+            FriendRequestResult.Created
         }
-
-        val request = filtered.first()
-
-        assert(request.status == Status.PENDING) {
-            "Trying to transition friendship for user ${user1.firebaseId} and ${user2.firebaseId} but " +
-                    "friendship is accepted - please check your logic in the calling function"
-        }
-
-        request.status = Status.ACCEPTED
-        friendshipRepository.save(request)
     }
 
     fun deleteFriendship(user1: User, toDeleteId: String): DeleteFriendRequestResult {

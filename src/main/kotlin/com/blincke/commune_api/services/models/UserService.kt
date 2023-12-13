@@ -5,6 +5,7 @@ import com.blincke.commune_api.models.domain.users.egress.FindAndSyncFirebaseUse
 import com.blincke.commune_api.models.domain.users.egress.GetUserResult
 import com.blincke.commune_api.models.firebase.FirebaseUser
 import com.blincke.commune_api.repositories.UserRepository
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -42,4 +43,11 @@ class UserService(
     fun updateProfilePictureUrl(user: User, url: URL) {
         userRepository.save(user.copy(profilePictureUrl = url.toString()))
     }
+
+    fun getUsersByQuery(requester: User, queryString: String, page: Int, pageSize: Int) =
+        userRepository.getAllByFirebaseIdNotAndNameContainingIgnoreCase(
+            requester.firebaseId,
+            queryString.lowercase(),
+            Pageable.ofSize(pageSize).withPage(page)
+        )
 }
