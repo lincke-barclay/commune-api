@@ -29,7 +29,7 @@ class Invitation(
 
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "firebase_id")
-    val sender: User, // Could be derived from event based on its owner, but if we wanted to support others
+    val sender: User,
 
     @ManyToOne
     @JoinColumn(name = "recipient_id", referencedColumnName = "firebase_id")

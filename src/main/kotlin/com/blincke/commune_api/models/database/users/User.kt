@@ -20,12 +20,6 @@ class User(
 
     @Column(name = "profile_picture_url")
     val profilePictureUrl: String? = null,
-
-    @OneToMany(mappedBy = "friendshipId.requester", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val friendRequestsISent: MutableSet<Friendship>,
-
-    @OneToMany(mappedBy = "friendshipId.recipient", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val friendRequestsSentToMe: MutableSet<Friendship>,
 ) {
     fun copy(
         firebaseId: String? = null,

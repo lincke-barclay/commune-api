@@ -17,4 +17,6 @@ interface InvitationRepository : JpaRepository<Invitation, String> {
         recipient: User,
         pageable: Pageable,
     ): List<Invitation>
+
+    fun findByIdAndRecipient(invitationId: String, recipient: User): Invitation?
 }

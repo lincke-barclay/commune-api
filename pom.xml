@@ -101,6 +101,11 @@
 			<artifactId>aws-java-sdk-s3</artifactId>
 			<version>1.12.590</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.java-json-tools</groupId>
+			<artifactId>json-patch</artifactId>
+			<version>1.13</version>
+		</dependency>
 	</dependencies>
 
 	<build>
