@@ -1,34 +1,27 @@
-package com.blincke.commune_api.e2e
+package api
 
 import com.blincke.commune_api.CommuneApiApplication
-import com.blincke.commune_api.models.database.invitations.Invitation
-import com.blincke.commune_api.repositories.InvitationRepository
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
-import util.DataBootstrapUtility
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import util.TestBase
 
 @SpringBootTest(classes = [CommuneApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @WithMockUser
-class InvitationFunctionalTests {
-
-    @Autowired
-    @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-    lateinit var dataBootstrapUtility: DataBootstrapUtility
+class InvitationFunctionalTests : TestBase() {
 
     @Autowired
     lateinit var mockMvc: MockMvc
 
-    @SpyBean
-    lateinit var invitationRepository: InvitationRepository
-
-    private val userId = "userId"
+    private val senderUserId = "senderUserId"
+    private val recipientUserId = "recipientUserId"
     private val eventId = "eventId"
 
     @Test
@@ -69,12 +62,24 @@ class InvitationFunctionalTests {
         @Test
         fun `cannot change invitation ID`() {
             // Create an invitation
-
             val invitation = dataBootstrapUtility.createAndSaveInvitation()
+            val patch = """
+                [
+                    { "op": "replace", "path": "/id", "value": "1234" }
+                ]
+            """.trimIndent()
 
             // Attempt to patch the invitation by ID
-
-            // Anticipate a bad request response
+            mockMvc.perform(
+                patch(
+                    "/users/{userId}/invitations/{invitationId}",
+                    recipientUserId,
+                    invitation.id,
+                )
+                    .contentType("application/json-patch+json")
+                    .content(patch)
+            )
+                .andExpect(status().isBadRequest)
         }
 
         @Test
