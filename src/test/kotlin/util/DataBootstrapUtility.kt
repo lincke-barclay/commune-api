@@ -16,8 +16,7 @@ class DataBootstrapUtility(
     private val eventRepository: EventRepository,
     private val userRepository: UserRepository,
 ) {
-
-    // FIXME: should all the repositories be SpyBeans
+    // FIXME: should all the repositories be SpyBeans?
 
     private final val defaultEmail = "a@a.com"
     private final val defaultFirebaseId = "123"
@@ -62,7 +61,6 @@ class DataBootstrapUtility(
             )
         )
     }
-
 
     fun createAndSaveInvitation(
         event: Event = defaultEvent,
