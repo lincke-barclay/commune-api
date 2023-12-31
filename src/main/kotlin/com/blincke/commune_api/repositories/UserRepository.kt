@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query
 
 interface UserRepository : JpaRepository<User, String> {
 
-    // TODO - algorithm
     fun getAllByFirebaseIdNotAndNameContainingIgnoreCase(
         id: String,
         nameContainsLower: String,
