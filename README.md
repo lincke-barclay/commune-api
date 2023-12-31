@@ -1,3 +1,17 @@
+## Local Development
+
+### Environment Variables
+The following environment variables are used throughout the application
+
+POSTGRES_DB_HOST=localhost
+POSTGRES_DB_NAME=commune
+POSTGRES_PASSWORD=abc123
+POSTGRES_USERNAME=postgres
+LINODE_S3_ACCESS_KEY=...
+LINODE_S3_SECRET_KEY=...
+TEST1_EMAIL=...
+TEST1_PASSWORD=...
+
 ## Insomnia Setup
 
 1. Import ./api-reference/insomnia.json into your insomnia project
