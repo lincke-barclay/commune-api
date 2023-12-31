@@ -66,8 +66,8 @@ class TestUsersFixtureService {
         val obj = objectMapper.readTree(response)
 
         val ret = HashMap<String, String>()
-        ret.put("token", obj.path("idToken").asText())
-        ret.put("id", obj.path("localId").asText())
+        ret["token"] = obj.path("idToken").asText()
+        ret["id"] = obj.path("localId").asText()
         return ret
     }
 }
