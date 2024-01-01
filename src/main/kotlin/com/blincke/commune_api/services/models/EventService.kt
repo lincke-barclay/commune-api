@@ -79,7 +79,6 @@ class EventService(
         owner: User,
     ) = CreateEventResult.Created(eventRepository.save(postEventRequestDTO.toDomain(owner)))
 
-    // TODO - algorithm
     fun getMyFeed(
         requester: User,
         lastEventId: String?,

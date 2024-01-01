@@ -71,4 +71,6 @@ interface UserRepository : JpaRepository<User, String> {
                 "where f2.friendshipId.recipient = f1.friendshipId.requester)"
     )
     fun selectFriendshipsThatArePendingThatWhereSentToMe(user: User, pageable: Pageable): List<User>
+
+    fun deleteAllByFirebaseIdContainingIgnoreCase(likeStr: String)
 }

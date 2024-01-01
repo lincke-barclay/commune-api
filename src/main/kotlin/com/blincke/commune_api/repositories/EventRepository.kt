@@ -48,4 +48,6 @@ interface EventRepository : JpaRepository<Event, String> {
         ownerNot: User,
         pageable: Pageable,
     ): List<Event>
+
+    fun deleteAllByIdContainingIgnoreCase(idLike: String)
 }
