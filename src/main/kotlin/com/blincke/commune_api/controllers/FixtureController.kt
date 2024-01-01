@@ -56,8 +56,7 @@ class FixtureController(
                 Event(
                     id = "Fixture|MyEvent|$it",
                     title = generateRandomWord(5),
-                    longDescription = generateRandomSentence(90),
-                    shortDescription = generateRandomSentence(10),
+                    description = generateRandomSentence(90),
                     startDateTime = startDateTime,
                     endDateTime = endDateTime,
                     owner = myUser,
@@ -98,8 +97,7 @@ class FixtureController(
                 Event(
                     id = "Fixture|$it",
                     title = generateRandomWord(5),
-                    longDescription = generateRandomSentence(90),
-                    shortDescription = generateRandomSentence(10),
+                    description = generateRandomSentence(90),
                     startDateTime = startDateTime,
                     endDateTime = endDateTime,
                     owner = users.random(),

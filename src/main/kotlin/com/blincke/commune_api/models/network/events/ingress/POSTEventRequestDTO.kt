@@ -6,8 +6,7 @@ import java.time.Instant
 
 data class POSTEventRequestDTO(
         val title: String,
-        val shortDescription: String,
-        val longDescription: String,
+        val description: String,
         val startingDateTime: Instant,
         val endingDateTime: Instant
 ) {
@@ -16,7 +15,6 @@ data class POSTEventRequestDTO(
             startDateTime = startingDateTime,
             endDateTime = endingDateTime,
             title = title,
-            shortDescription = shortDescription,
-            longDescription = longDescription,
+            description = description,
     )
 }

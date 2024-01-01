@@ -35,10 +35,7 @@ class Event(
     @Column(name = "title", nullable = false)
     val title: String,
 
-    @Column(name = "short_description", nullable = false)
-    val shortDescription: String,
-
-    @Column(name = "long_description", nullable = false)
-    val longDescription: String,
+    @Column(name = "description", nullable = false)
+    val description: String,
 )
 

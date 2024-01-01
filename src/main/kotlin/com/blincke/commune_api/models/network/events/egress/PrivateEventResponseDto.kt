@@ -10,8 +10,7 @@ data class PrivateEventResponseDto(
         val startDateTime: Instant,
         val endDateTime: Instant,
         val title: String,
-        val shortDescription: String,
-        val longDescription: String,
+        val description: String,
 )
 
 fun Event.toPrivateEventResponseDto() = PrivateEventResponseDto(
@@ -21,7 +20,6 @@ fun Event.toPrivateEventResponseDto() = PrivateEventResponseDto(
         startDateTime = startDateTime,
         endDateTime = endDateTime,
         title = title,
-        shortDescription = shortDescription,
-        longDescription = longDescription,
+        description = description,
 )
 

@@ -9,8 +9,7 @@ data class PublicEventResponseDto(
         val startDateTime: Instant,
         val endDateTime: Instant,
         val title: String,
-        val shortDescription: String,
-        val longDescription: String,
+        val description: String,
 )
 
 fun Event.toPublicEventResponseDto() = PublicEventResponseDto(
@@ -19,6 +18,5 @@ fun Event.toPublicEventResponseDto() = PublicEventResponseDto(
         startDateTime = startDateTime,
         endDateTime = endDateTime,
         title = title,
-        shortDescription = shortDescription,
-        longDescription = longDescription,
+        description = description,
 )
