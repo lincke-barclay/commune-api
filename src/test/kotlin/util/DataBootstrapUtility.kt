@@ -31,8 +31,7 @@ class DataBootstrapUtility(
             title = defaultEventTitle,
             startDateTime = Instant.now(),
             endDateTime = Instant.now(),
-            longDescription = "",
-            shortDescription = "",
+            description = "",
         )
     )
 
@@ -56,8 +55,7 @@ class DataBootstrapUtility(
                 title = title,
                 startDateTime = startDateTime,
                 endDateTime = endDateTime,
-                longDescription = longDescription,
-                shortDescription = shortDescription,
+                description = shortDescription,
             )
         )
     }
@@ -74,6 +72,7 @@ class DataBootstrapUtility(
                 recipient = recipient,
                 sender = sender,
                 status = status,
+                expirationTimestamp = event.startDateTime,
             )
         )
     }

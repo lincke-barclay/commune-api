@@ -6,4 +6,5 @@ sealed interface CreateInvitationResult {
     data class Created(val invitation: Invitation): CreateInvitationResult
     data object NoRecipient: CreateInvitationResult
     data object NoEvent: CreateInvitationResult
+    data object NotFriends: CreateInvitationResult
 }

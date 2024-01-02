@@ -40,5 +40,5 @@ class Invitation(
     var status: Status,
 
     @Column(name = "expiration_timestamp_utc")
-    val expirationTimestamp: Instant? = null, // FIXME: default to event start
+    val expirationTimestamp: Instant,
 )
