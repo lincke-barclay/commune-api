@@ -1,4 +1,4 @@
-package api
+package com.blincke.commune_api.com.blincke.commune_api.functional
 
 import com.blincke.commune_api.CommuneApiApplication
 import org.junit.jupiter.api.Nested
@@ -10,7 +10,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import util.TestBase
+import com.blincke.commune_api.com.blincke.commune_api.util.TestBase
 
 @SpringBootTest(classes = [CommuneApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc

@@ -1,4 +1,4 @@
-package util
+package com.blincke.commune_api.com.blincke.commune_api.util
 
 import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.invitations.Invitation

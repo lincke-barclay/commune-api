@@ -1,4 +1,4 @@
-package util
+package com.blincke.commune_api.com.blincke.commune_api.util
 
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
