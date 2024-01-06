@@ -11,13 +11,13 @@ class WebSecurityConfiguration {
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests { auth ->
             auth
-                    .requestMatchers("/swagger-ui/**").permitAll()
-                    .requestMatchers("/v3/api-docs/**").permitAll()
-                    .anyRequest().authenticated()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated()
         }
-                .oauth2ResourceServer { oauth2 ->
-                    oauth2.jwt { }
-                }
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.jwt { }
+            }
         return http.build()
     }
 }

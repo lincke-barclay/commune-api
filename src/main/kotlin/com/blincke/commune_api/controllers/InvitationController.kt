@@ -1,16 +1,13 @@
 package com.blincke.commune_api.controllers
 
-import com.amazonaws.Response
-import com.blincke.commune_api.common.largestPSQLDate
+import com.blincke.commune_api.common.runAuthenticated
 import com.blincke.commune_api.common.runAuthorized
 import com.blincke.commune_api.logging.AppLoggerFactory
 import com.blincke.commune_api.models.database.invitations.Status
 import com.blincke.commune_api.models.domain.invitations.egress.CreateInvitationResult
 import com.blincke.commune_api.models.domain.invitations.egress.PatchInvitationResult
 import com.blincke.commune_api.models.network.SortDirection
-import com.blincke.commune_api.models.network.events.egress.toPrivateEventResponseDto
-import com.blincke.commune_api.models.network.events.ingress.PublicEventSortBy
-import com.blincke.commune_api.models.network.invitations.egress.toInvitationResponseDto
+import com.blincke.commune_api.models.network.invitations.egress.toPrivateInvitationResponseDto
 import com.blincke.commune_api.models.network.invitations.ingress.InvitationSortBy
 import com.blincke.commune_api.services.models.InvitationService
 import com.blincke.commune_api.services.models.UserService
@@ -46,31 +43,33 @@ class InvitationController(
                 sortDirection = SortDirection.ASC,
                 limit = limit,
                 status = status,
-            ).map { it.toInvitationResponseDto() }
+            ).map { it.toPrivateInvitationResponseDto() }
             ResponseEntity.ok(results)
         }
     }
 
-    @PostMapping("/users/{userId}/invitations")
+    @PostMapping("/users/{recipientId}/invitations")
     fun createNewInvitation(
         principal: JwtAuthenticationToken,
-        @PathVariable("userId", required = true) userId: String,
+        @PathVariable("recipientId", required = true) recipientId: String,
         @RequestParam("eventId", required = true) eventId: String,
         @RequestParam("expirationTimestamp", required = false) expirationTimestamp: Instant? = null,
     ): ResponseEntity<out Any> {
-        logger.debug("Creating an invitation for user $userId")
-        return userService.runAuthorized(userId, principal) { requestingUser ->
+        logger.debug("Creating an invitation for user $recipientId")
+        return userService.runAuthenticated(principal) { requestingUser ->
+
             val result = invitationService.createNewInvitationForUserAndEventByIds(
                 sender = requestingUser,
-                recipientId = userId,
+                recipientId = recipientId,
                 eventId = eventId,
                 expirationTimestamp = expirationTimestamp,
             )
 
             when (result) {
-                is CreateInvitationResult.Created -> ResponseEntity.ok(result)
+                is CreateInvitationResult.Created -> ResponseEntity.ok(result.invitation.toPrivateInvitationResponseDto())
                 CreateInvitationResult.NoEvent -> ResponseEntity.notFound().build()
                 CreateInvitationResult.NoRecipient -> ResponseEntity.notFound().build()
+                CreateInvitationResult.NotFriends -> ResponseEntity.notFound().build()
             }
         }
     }

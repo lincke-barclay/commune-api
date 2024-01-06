@@ -1,4 +1,4 @@
-package com.blincke.commune_api.e2e.services
+package com.blincke.commune_api.com.blincke.commune_api.e2e.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.json.JSONObject
@@ -9,7 +9,15 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 
+data class TestUserFixtureInfo(
+    val id: String,
+    val token: String,
+)
 
+/**
+ * These are real users stored in firebase
+ * This service fetches their tokens and id's etc.
+ */
 @Component
 class TestUsersFixtureService {
     @Value("\${fixtures.users.test1.email}")
@@ -29,7 +37,7 @@ class TestUsersFixtureService {
     val restTemplate: RestTemplate = RestTemplate()
     val objectMapper = ObjectMapper()
 
-    fun postTokenForUser1(): Map<String, String> {
+    fun postTokenForUser1(): TestUserFixtureInfo {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
 
@@ -44,13 +52,13 @@ class TestUsersFixtureService {
 
         val obj = objectMapper.readTree(response)
 
-        val ret = HashMap<String, String>()
-        ret.put("token", obj.path("idToken").asText())
-        ret.put("id", obj.path("localId").asText())
-        return ret
+        return TestUserFixtureInfo(
+            id = obj.path("localId").asText(),
+            token = obj.path("idToken").asText(),
+        )
     }
 
-    fun postTokenForUser2(): Map<String, String> {
+    fun postTokenForUser2(): TestUserFixtureInfo {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
 
@@ -65,9 +73,9 @@ class TestUsersFixtureService {
 
         val obj = objectMapper.readTree(response)
 
-        val ret = HashMap<String, String>()
-        ret["token"] = obj.path("idToken").asText()
-        ret["id"] = obj.path("localId").asText()
-        return ret
+        return TestUserFixtureInfo(
+            id = obj.path("localId").asText(),
+            token = obj.path("idToken").asText(),
+        )
     }
 }

@@ -1,4 +1,4 @@
-package util
+package com.blincke.commune_api.com.blincke.commune_api.util
 
 import com.blincke.commune_api.models.database.events.Event
 import com.blincke.commune_api.models.database.invitations.Invitation
@@ -31,8 +31,7 @@ class DataBootstrapUtility(
             title = defaultEventTitle,
             startDateTime = Instant.now(),
             endDateTime = Instant.now(),
-            longDescription = "",
-            shortDescription = "",
+            description = "",
         )
     )
 
@@ -56,8 +55,7 @@ class DataBootstrapUtility(
                 title = title,
                 startDateTime = startDateTime,
                 endDateTime = endDateTime,
-                longDescription = longDescription,
-                shortDescription = shortDescription,
+                description = shortDescription,
             )
         )
     }
@@ -74,6 +72,7 @@ class DataBootstrapUtility(
                 recipient = recipient,
                 sender = sender,
                 status = status,
+                expirationTimestamp = event.startDateTime,
             )
         )
     }

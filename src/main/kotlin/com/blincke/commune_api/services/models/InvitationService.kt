@@ -26,6 +26,7 @@ class InvitationService(
     private val eventService: EventService,
     private val userService: UserService,
     private val objectMapper: ObjectMapper,
+    private val friendsService: FriendService,
 ) {
     private val logger = AppLoggerFactory.getLogger(this.javaClass)
 
@@ -35,21 +36,44 @@ class InvitationService(
         eventId: String,
         expirationTimestamp: Instant?,
     ): CreateInvitationResult {
+        // Check if recipient exists
         val recipient = when (val result = userService.getUserById(id = recipientId)) {
             is GetUserResult.Active -> result.user
             GetUserResult.DoesntExist -> return CreateInvitationResult.NoRecipient
         }
 
+        // Check if they're friends first
+        if (!friendsService
+                .getFriendshipState(sender, recipient)
+                .areFullyFriends()
+        ) {
+            return CreateInvitationResult.NotFriends
+        }
+
+        // Get the event in question
         val event = when (val result = eventService.getEventById(id = eventId)) {
             is GetEventResult.Exists -> result.event
             GetEventResult.DoesntExist -> return CreateInvitationResult.NoEvent
         }
 
+        var newExpirationTimeStamp: Instant
+        // Verify expiration Time stamp
+        if (expirationTimestamp == null) {
+            logger.debug("Setting expiration timestamp to event start time")
+            newExpirationTimeStamp = event.startDateTime
+        } else if (expirationTimestamp > event.startDateTime) {
+            logger.debug("Expiration is greater than event start time - setting to event start time")
+            newExpirationTimeStamp = event.startDateTime
+        } else {
+            newExpirationTimeStamp = expirationTimestamp
+        }
+
+        // Create a new invitation
         val invitation = createNewInvitation(
             event = event,
             sender = sender,
             recipient = recipient,
-            expirationTimestamp = expirationTimestamp,
+            expirationTimestamp = newExpirationTimeStamp,
         )
 
         return CreateInvitationResult.Created(invitation = invitation)
@@ -59,7 +83,7 @@ class InvitationService(
         event: Event,
         sender: User,
         recipient: User,
-        expirationTimestamp: Instant? = null,
+        expirationTimestamp: Instant,
         status: Status = Status.PENDING,
     ): Invitation {
         return invitationRepository.save(
@@ -111,7 +135,7 @@ class InvitationService(
 
         try {
             assertValidPatch(oldInvitation = targetInvitation, updatedInvitation = updatedInvitation)
-        } catch(e: IllegalArgumentException) {
+        } catch (e: IllegalArgumentException) {
             return PatchInvitationResult.InvalidPatch
         }
 

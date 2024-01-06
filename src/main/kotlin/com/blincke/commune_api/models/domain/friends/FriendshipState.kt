@@ -7,4 +7,8 @@ data class FriendshipState(
     val user1Initiated: Boolean,
     val user2: User,
     val user2Initiated: Boolean,
-)
+) {
+    fun areFullyFriends(): Boolean {
+        return user1Initiated && user2Initiated
+    }
+}

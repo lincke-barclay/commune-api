@@ -1,6 +1,6 @@
-package com.blincke.commune_api.e2e
+package com.blincke.commune_api.com.blincke.commune_api.e2e.tests.api.friends.usecases
 
-import com.blincke.commune_api.e2e.services.TestUsersFixtureService
+import com.blincke.commune_api.com.blincke.commune_api.e2e.services.TestUsersFixtureService
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.*
@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class FriendsControllerSequentialTests2Users {
+class TwoUsersFriendUnfriend {
     @LocalServerPort
     var port: Int? = null
 
@@ -38,12 +38,12 @@ class FriendsControllerSequentialTests2Users {
     @BeforeAll
     fun tokens() {
         var ret = testUsersFixtureService.postTokenForUser1()
-        tokenUser1 = ret["token"]!!
-        idUser1 = ret["id"]!!
+        tokenUser1 = ret.token
+        idUser1 = ret.id
 
         ret = testUsersFixtureService.postTokenForUser2()
-        tokenUser2 = ret["token"]!!
-        idUser2 = ret["id"]!!
+        tokenUser2 = ret.token
+        idUser2 = ret.id
     }
 
     @Test
