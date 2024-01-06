@@ -6,8 +6,8 @@ import com.blincke.commune_api.models.network.users.egress.toPublicUserResponseD
 
 
 data class MinimalEventListResponseDto(
-        val publicEvents: List<PublicEventResponseDto>,
-        val publicUsers: HashMap<String, PublicUserResponseDto>
+    val publicEvents: List<PublicEventResponseDto>,
+    val publicUsers: HashMap<String, PublicUserResponseDto>
 )
 
 fun List<Event>.toMinimalPublicEventListDto(): MinimalEventListResponseDto {
@@ -20,7 +20,7 @@ fun List<Event>.toMinimalPublicEventListDto(): MinimalEventListResponseDto {
     }
 
     return MinimalEventListResponseDto(
-            publicEvents = publicEvents,
-            publicUsers = publicUsers,
+        publicEvents = publicEvents,
+        publicUsers = publicUsers,
     )
 }

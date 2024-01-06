@@ -3,9 +3,9 @@ package com.blincke.commune_api.models.firebase
 import com.blincke.commune_api.models.database.users.User
 
 data class FirebaseUser(
-        val uid: String,
-        val name: String,
-        val email: String,
+    val uid: String,
+    val name: String,
+    val email: String,
 ) {
 
     /**
@@ -14,9 +14,9 @@ data class FirebaseUser(
      * that has no friends
      */
     fun toNewCommuneUser() = User(
-            firebaseId = uid,
-            name = name,
-            email = email,
+        firebaseId = uid,
+        name = name,
+        email = email,
     )
 
     /**
@@ -24,15 +24,15 @@ data class FirebaseUser(
      * commune database user
      */
     fun isInSyncWithCommuneUser(user: User) =
-            email == user.email && name == user.name
+        email == user.email && name == user.name
 
     /**
      * Returns a new commune database user that
      * is up-to-date with the firebase user
      */
     fun mergeWithCommuneUser(user: User) =
-            user.copy(
-                    email = email,
-                    name = name,
-            )
+        user.copy(
+            email = email,
+            name = name,
+        )
 }

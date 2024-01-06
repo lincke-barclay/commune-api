@@ -7,7 +7,7 @@ import com.blincke.commune_api.models.network.events.egress.PublicEventResponseD
 import com.blincke.commune_api.models.network.events.egress.toPublicEventResponseDto
 import java.time.Instant
 
-data class PrivateInvitationResponseDto (
+data class PrivateInvitationResponseDto(
     val id: String,
     val createdTs: Instant,
     val lastUpdatedTs: Instant,

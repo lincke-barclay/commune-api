@@ -58,10 +58,10 @@ class InvitationService(
 
         var newExpirationTimeStamp: Instant
         // Verify expiration Time stamp
-        if(expirationTimestamp == null) {
+        if (expirationTimestamp == null) {
             logger.debug("Setting expiration timestamp to event start time")
             newExpirationTimeStamp = event.startDateTime
-        } else if(expirationTimestamp > event.startDateTime) {
+        } else if (expirationTimestamp > event.startDateTime) {
             logger.debug("Expiration is greater than event start time - setting to event start time")
             newExpirationTimeStamp = event.startDateTime
         } else {
